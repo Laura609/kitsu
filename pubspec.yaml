@@ -1,0 +1,32 @@
+name: test1
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0-175.0.dev <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  smooth_page_indicator: ^1.2.0+3
+  shared_preferences: ^2.0.8
+
+  # Firebase dependencies
+  firebase_core: ^2.32.0  # Обновленная версия firebase_core
+  firebase_auth: ^4.7.0  # Совместимая версия для firebase_auth
+  cloud_firestore: ^4.7.0  # Для работы с Firestore
+  firebase_storage: ^11.2.0  # Для работы с Firebase Storage
+  firebase_messaging: ^14.3.0  # Для работы с push-уведомлениями
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
