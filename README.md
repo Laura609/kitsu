@@ -1,20 +1,40 @@
-<<<<<<< HEAD
-# test1
+# Kitsu - Платформа для обучения с менторами и учениками
 
-A new Flutter project.
+**Kitsu** — это мобильное приложение, разработанное с использованием Flutter и Firebase, которое предоставляет возможность для обучения в рамках системы с менторами и учениками.
 
-## Getting Started
+В этом приложении существует две основные категории пользователей:
 
-This project is a starting point for a Flutter application.
+- **Менторы** — люди, которые обучают других.
+- **Ученики** — пользователи, которые проходят обучение.
 
-A few resources to get you started if this is your first Flutter project:
+Проект включает в себя авторизацию через Firebase, создание и редактирование профилей пользователей, а также функциональность для общения и обучающих материалов.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Стек технологий
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-=======
-# kitsu
->>>>>>> f4bfec736b850f4afe37e912d06ecda957111bb4
+- **Flutter** — для разработки мобильного приложения.
+- **Firebase** — для хранения данных и аутентификации.
+- **Firestore** — для работы с базой данных.
+- **Firebase Authentication** — для аутентификации пользователей.
+
+## Возможности приложения
+
+- **Авторизация и регистрация**: Возможность регистрации новых пользователей и авторизации для существующих.
+- **Профили пользователей**: У каждого пользователя есть личный профиль, который можно редактировать.
+- **Роли пользователей**: Приложение различает пользователей по ролям: ментор и ученик.
+- **Платформа для обучения**: Менторы могут создавать курсы, а ученики — записываться на них и отслеживать свой прогресс.
+
+## Как запустить проект
+
+### Шаг 1: Клонирование репозитория
+
+Сначала клонируйте репозиторий на ваш локальный компьютер:
+
+```bash
+git clone https://github.com/yourusername/kitsu.git
+```
+```bash
+cd kitsu
+```
+```bash
+flutter pub get
+```
