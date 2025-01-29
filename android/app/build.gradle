@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.example.test1"
-    compileSdk = flutter.compileSdkVersion
+    compileSdkVersion 34
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -58,10 +58,12 @@ flutter {
 }
 
 dependencies {
-    // Прочие зависимости
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0" // Обновите до 1.9.0
-    implementation 'com.google.firebase:firebase-appcheck-safetynet:16.1.0'  // или другой поставщик AppCheck, который вы используете
-
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0" 
+    implementation 'com.google.firebase:firebase-analytics:21.0.0' // Add Firebase Analytics if used
+    implementation 'com.google.firebase:firebase-auth:21.1.0'      // Add Firebase Auth if used
+    implementation 'com.google.firebase:firebase-firestore:24.0.0' // Add Firestore if needed
+    implementation 'com.google.firebase:firebase-appcheck-safetynet:16.1.0'
 }
+
 
 apply plugin: 'com.google.gms.google-services'  // Важно для Firebase

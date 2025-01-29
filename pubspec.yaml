@@ -13,13 +13,14 @@ dependencies:
   cupertino_icons: ^1.0.6
   smooth_page_indicator: ^1.2.0+3
   shared_preferences: ^2.0.8
+  logger: ^1.0.0
 
   # Firebase dependencies
-  firebase_core: ^2.32.0  # Обновленная версия firebase_core
-  firebase_auth: ^4.7.0  # Совместимая версия для firebase_auth
-  cloud_firestore: ^4.7.0  # Для работы с Firestore
-  firebase_storage: ^11.2.0  # Для работы с Firebase Storage
-  firebase_messaging: ^14.3.0  # Для работы с push-уведомлениями
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.7.0
+  cloud_firestore: ^4.7.0
+  firebase_storage: ^11.2.0
+  firebase_messaging: ^14.3.0
 
 dev_dependencies:
   flutter_test:

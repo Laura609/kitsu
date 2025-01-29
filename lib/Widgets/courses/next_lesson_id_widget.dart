@@ -6,7 +6,7 @@ class LessonTile extends StatelessWidget {
   final String lessonTitle;
   final String lessonContent;
   final String nextLessonId;
-  final String groupId; // Добавляем параметр groupId
+  final String groupId; // Новый параметр groupId
 
   const LessonTile({
     super.key,
@@ -14,15 +14,17 @@ class LessonTile extends StatelessWidget {
     required this.lessonTitle,
     required this.lessonContent,
     required this.nextLessonId,
-    required this.groupId, // Убедитесь, что groupId передаётся в конструктор
+    required this.groupId, // Добавляем параметр groupId
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
-      title: Text(lessonTitle,
-          style: const TextStyle(fontSize: 14, color: Colors.white)),
+      title: Text(
+        lessonTitle,
+        style: const TextStyle(fontSize: 14, color: Colors.white),
+      ),
       leading:
           const Icon(Icons.insert_drive_file, size: 20, color: Colors.white),
       tileColor: const Color.fromRGBO(36, 36, 36, 1),
@@ -35,7 +37,7 @@ class LessonTile extends StatelessWidget {
               lessonTitle: lessonTitle,
               lessonContent: lessonContent,
               nextLessonId: nextLessonId,
-              groupId: groupId, // Передаём groupId
+              groupId: groupId, // Передаем groupId
             ),
           ),
         );

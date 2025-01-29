@@ -13,7 +13,7 @@ class MainPage extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const MentorOrStudentPofilePage();
+            return MentorOrStudentPofilePage();
           } else {
             return const AuthPage();
           }

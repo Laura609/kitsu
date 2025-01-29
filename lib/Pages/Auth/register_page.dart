@@ -31,7 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String selectedRole = '';
   bool _isTouched = false;
-  bool _isAgeValid = true;
+  final bool _isAgeValid = true;
   bool _isFormValid = false;
 
   @override

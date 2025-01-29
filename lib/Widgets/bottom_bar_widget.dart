@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/home_page.dart';
 import 'package:test1/Pages/mentor_or_student_profile_page.dart';
+import 'package:test1/Pages/mentor_profile_page.dart';
+import 'package:test1/Pages/student_profile_page.dart';
 import 'package:test1/Pages/training_page.dart';
 
 class BottomNavBar extends StatelessWidget {
@@ -53,13 +55,18 @@ class BottomNavBar extends StatelessWidget {
 
   int _selectedIndex(BuildContext context) {
     final routeName = ModalRoute.of(context)!.settings.name;
-    if (routeName == TrainingPage.routeName) {
-      return 0; // Первая кнопка - TrainingPage
+
+    // We need to consider the case where the user is in the profile page route
+    if (routeName == MentorOrStudentPofilePage.routeName ||
+        routeName == MentorPage.routeName ||
+        routeName == StudentPage.routeName) {
+      return 2; // Profile tab selected if we're in the profile page or mentor/student profile
+    } else if (routeName == TrainingPage.routeName) {
+      return 0; // Training tab selected
     } else if (routeName == HomePage.routeName) {
-      return 1; // Вторая кнопка - HomePage
-    } else if (routeName == MentorOrStudentPofilePage.routeName) {
-      return 2; // Третья кнопка - ProfilePage
+      return 1; // Home tab selected
     }
-    return 0; // Default selection
+
+    return 0; // Default selection (could be changed based on app flow)
   }
 }

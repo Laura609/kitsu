@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:test1/Pages/training_page.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
+import 'package:test1/Widgets/progress_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 
 class StudentPage extends StatefulWidget {
@@ -108,11 +109,20 @@ class _StudentPageState extends State<StudentPage> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text('Ошибка загрузки данных'));
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Ошибка загрузки данных: ${snapshot.error}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
           }
 
-          userData = snapshot.data!.data() as Map<String, dynamic>;
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text('Нет данных для отображения.'));
+          }
+
+          userData = snapshot.data!.data() as Map<String, dynamic>?;
 
           if (userData == null || userData!.isEmpty) {
             return const Center(child: Text('Данные пользователя не найдены.'));
@@ -193,21 +203,12 @@ class _StudentPageState extends State<StudentPage> {
 
     return Column(
       children: [
-        const Text(
-          'Прогресс:',
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
-        LinearProgressIndicator(
-          value: progressValue / 100,
-          backgroundColor: Colors.grey[600],
-          valueColor: const AlwaysStoppedAnimation<Color>(
-              Color.fromRGBO(2, 217, 173, 1)),
+        ProgressWidget(
+          courseName: 'Курс по дизайну',
+          progress: progressValue,
+          icon: Icons.school,
         ),
         const SizedBox(height: 10),
-        Text(
-          '${progressValue.toStringAsFixed(2)}%',
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-        ),
       ],
     );
   }

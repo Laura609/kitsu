@@ -3,10 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/mentor_profile_page.dart';
 import 'package:test1/Pages/student_profile_page.dart';
+import 'package:logger/logger.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 
 class MentorOrStudentPofilePage extends StatelessWidget {
   static const routeName = '/profile';
-  const MentorOrStudentPofilePage({super.key});
+  MentorOrStudentPofilePage({super.key});
+
+  final logger = Logger(); // Создание экземпляра логера
 
   @override
   Widget build(BuildContext context) {
@@ -20,23 +24,28 @@ class MentorOrStudentPofilePage extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LoadingWidget());
           }
 
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text('Ошибка загрузки данных'));
+          if (snapshot.hasError) {
+            // Печать ошибки для диагностики
+            logger.e("Ошибка загрузки данных: ${snapshot.error}");
+            return const Center(
+                child: Text('Произошла ошибка при загрузке данных.'));
           }
 
-          // Получаем данные пользователя
+          if (!snapshot.hasData || snapshot.data == null) {
+            // Печать, если данных нет
+            logger.e("Нет данных для текущего пользователя.");
+            return const Center(child: Text('Нет данных для отображения.'));
+          }
+
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String role = (userData['role'] ?? '').toString().toLowerCase();
 
-          // Отладочное сообщение: показываем полученную роль
-          print("User role: $role");
+          logger.d("User role: $role");
 
-          // Определяем, на какую страницу перенаправить
           if (role == 'ментор') {
-            // Если роль ментор, перенаправляем на MentorPage
             if (ModalRoute.of(context)?.settings.name != MentorPage.routeName) {
               Future.microtask(() {
                 Navigator.pushReplacement(
@@ -46,7 +55,6 @@ class MentorOrStudentPofilePage extends StatelessWidget {
               });
             }
           } else if (role == 'ученик') {
-            // Если роль ученик, перенаправляем на StudentPage
             if (ModalRoute.of(context)?.settings.name !=
                 StudentPage.routeName) {
               Future.microtask(() {
@@ -57,13 +65,11 @@ class MentorOrStudentPofilePage extends StatelessWidget {
               });
             }
           } else {
-            // Если роль не ментор и не ученик, выводим ошибку
-            print("Неверная роль пользователя: $role");
+            logger.e("Неверная роль пользователя: $role");
             return const Center(child: Text('Роль пользователя не найдена.'));
           }
 
-          // Пока идет проверка роли, можно отображать экран загрузки
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         },
       ),
     );

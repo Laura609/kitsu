@@ -13,11 +13,11 @@ class GroupTile extends StatefulWidget {
   });
 
   @override
-  _GroupTileState createState() => _GroupTileState();
+  GroupTileState createState() => GroupTileState();
 }
 
-class _GroupTileState extends State<GroupTile> {
-  bool _isGroupExpanded = false; // Состояние для раскрытия группы
+class GroupTileState extends State<GroupTile> {
+  bool _isGroupExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +26,7 @@ class _GroupTileState extends State<GroupTile> {
         GestureDetector(
           onTap: () {
             setState(() {
-              _isGroupExpanded =
-                  !_isGroupExpanded; // Переключаем видимость уроков
+              _isGroupExpanded = !_isGroupExpanded;
             });
           },
           child: Container(
@@ -36,10 +35,7 @@ class _GroupTileState extends State<GroupTile> {
               borderRadius: BorderRadius.circular(10),
               boxShadow: const [
                 BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 4,
-                  offset: Offset(2, 2),
-                ),
+                    color: Colors.black26, blurRadius: 6, offset: Offset(2, 2)),
               ],
             ),
             padding: const EdgeInsets.all(12.0),
@@ -52,10 +48,9 @@ class _GroupTileState extends State<GroupTile> {
                   child: Text(
                     widget.groupTitle,
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ),
                 Icon(
@@ -74,6 +69,7 @@ class _GroupTileState extends State<GroupTile> {
     );
   }
 
+  // Метод для загрузки и отображения уроков
   Widget _buildLessonMenu() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -102,11 +98,15 @@ class _GroupTileState extends State<GroupTile> {
                 lessonData['title'] ?? 'Название урока не найдено';
             String lessonContent =
                 lessonData['content'] ?? 'Контент урока не найден';
+            String nextLessonId = lessonData['nextLessonId'] ?? '';
 
             return LessonTile(
-                lessonId: lessonDoc.id,
-                lessonTitle: lessonTitle,
-                lessonContent: lessonContent);
+              lessonId: lessonDoc.id,
+              lessonTitle: lessonTitle,
+              lessonContent: lessonContent,
+              nextLessonId: nextLessonId,
+              groupId: widget.groupId, // Добавляем передаваемый groupId
+            );
           }).toList(),
         );
       },

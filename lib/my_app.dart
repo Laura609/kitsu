@@ -6,10 +6,6 @@ import 'package:test1/Pages/mentor_or_student_profile_page.dart';
 import 'package:test1/Pages/student_profile_page.dart';
 import 'package:test1/Pages/training_page.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -27,7 +23,7 @@ class MyApp extends StatelessWidget {
         MentorPage.routeName: (context) => const MentorPage(),
         StudentPage.routeName: (context) => const StudentPage(),
         MentorOrStudentPofilePage.routeName: (context) =>
-            const MentorOrStudentPofilePage(),
+            MentorOrStudentPofilePage(),
       },
     );
   }
