@@ -23,13 +23,15 @@ class TrainingMenu extends StatelessWidget {
 
         var groups = snapshot.data!.docs;
 
-        return ListView(
-          children: groups.map((groupDoc) {
+        return ListView.builder(
+          itemCount: groups.length,
+          itemBuilder: (context, index) {
+            var groupDoc = groups[index];
             var groupData = groupDoc.data() as Map<String, dynamic>;
             String groupTitle = groupData['title'] ?? 'Группа не найдена';
 
             return GroupTile(groupTitle: groupTitle, groupId: groupDoc.id);
-          }).toList(),
+          },
         );
       },
     );

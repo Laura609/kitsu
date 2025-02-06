@@ -12,15 +12,18 @@ class EmailTextFieldWidget extends StatelessWidget {
     required this.isTouched,
   });
 
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+        .hasMatch(email.trim());
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double horizontalPadding = screenWidth * 0.07;
 
     // Проверка валидности email
-    bool isValidEmail =
-        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
-            .hasMatch(controller.text.trim());
+    bool isValidEmail = _isValidEmail(controller.text);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),

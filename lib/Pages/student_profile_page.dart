@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:test1/Pages/training_page.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/progress_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 
@@ -95,7 +96,7 @@ class _StudentPageState extends State<StudentPage> {
     return Scaffold(
       appBar: const AppBarWidget(
         text: 'Профиль',
-        isBack: true,
+        isBack: false,
         showSignOutButton: true,
       ),
       backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
@@ -106,14 +107,16 @@ class _StudentPageState extends State<StudentPage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: LoadingWidget(),
+            );
           }
 
           if (snapshot.hasError) {
             return Center(
               child: Text(
                 'Ошибка загрузки данных: ${snapshot.error}',
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             );
           }

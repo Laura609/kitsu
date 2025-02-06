@@ -25,8 +25,9 @@ class RoleSelectionWidget extends StatelessWidget {
           children: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    selectedRole == 'Ментор' ? Colors.green : Colors.grey,
+                backgroundColor: selectedRole == 'Ментор'
+                    ? Color.fromRGBO(2, 217, 173, 1)
+                    : Colors.grey,
               ),
               onPressed: () {
                 onRoleSelected('Ментор'); // Выбираем роль "Ментор"
@@ -36,8 +37,9 @@ class RoleSelectionWidget extends StatelessWidget {
             const SizedBox(width: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    selectedRole == 'Ученик' ? Colors.green : Colors.grey,
+                backgroundColor: selectedRole == 'Ученик'
+                    ? Color.fromRGBO(2, 217, 173, 1)
+                    : Colors.grey,
               ),
               onPressed: () {
                 onRoleSelected('Ученик'); // Выбираем роль "Ученик"

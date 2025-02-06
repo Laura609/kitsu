@@ -8,7 +8,7 @@ plugins {
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader("UTF-8") { reader ->
+    localPropertiesFile.withReader("UTF-8") { reader -> 
         localProperties.load(reader)
     }
 }
@@ -35,15 +35,15 @@ android {
 
     defaultConfig {
         applicationId = "com.example.test1"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutterVersionCode.toInteger()
-        versionName = flutterVersionName
+        minSdkVersion 23 // Устанавливаем minSdkVersion 23
+        targetSdkVersion 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -59,11 +59,10 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0" 
-    implementation 'com.google.firebase:firebase-analytics:21.0.0' // Add Firebase Analytics if used
-    implementation 'com.google.firebase:firebase-auth:21.1.0'      // Add Firebase Auth if used
-    implementation 'com.google.firebase:firebase-firestore:24.0.0' // Add Firestore if needed
+    implementation 'com.google.firebase:firebase-analytics-ktx:21.0.0'
+    implementation 'com.google.firebase:firebase-auth-ktx:21.1.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx:24.0.0'
     implementation 'com.google.firebase:firebase-appcheck-safetynet:16.1.0'
 }
 
-
-apply plugin: 'com.google.gms.google-services'  // Важно для Firebase
+apply plugin: 'com.google.gms.google-services'

@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/home_page.dart';
 import 'package:test1/Pages/mentor_or_student_profile_page.dart';
-import 'package:test1/Pages/mentor_profile_page.dart';
-import 'package:test1/Pages/student_profile_page.dart';
 import 'package:test1/Pages/training_page.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
+
+  @override
+  State<BottomNavBar> createState() => _BottomNavBarState();
+}
+
+class _BottomNavBarState extends State<BottomNavBar> {
+  int _selectedIndex = 2; // Изначально выбран профиль (номер 2)
+
+  // Маппинг маршрутов
+  final List<String> _routes = [
+    TrainingPage.routeName, // Страница обучения
+    HomePage.routeName, // Главная страница
+    MentorOrStudentPofilePage.routeName, // Страница профиля
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -15,58 +27,48 @@ class BottomNavBar extends StatelessWidget {
       selectedItemColor: const Color.fromRGBO(48, 127, 245, 1),
       unselectedItemColor: const Color.fromRGBO(173, 174, 174, 1),
       type: BottomNavigationBarType.fixed,
-      currentIndex: _selectedIndex(context),
+      currentIndex: _selectedIndex,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.forum),
-          label: "Обучение", // Первая кнопка - TrainingPage
+          label: "Обучение", // Страница обучения
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: "Главная", // Вторая кнопка - HomePage
+          label: "Главная", // Главная страница
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.account_circle),
-          label: "Профиль", // Третья кнопка - ProfilePage
+          label: "Профиль", // Страница профиля
         ),
       ],
       onTap: (int index) {
-        if (index != _selectedIndex(context)) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(
-                  context, TrainingPage.routeName); // TrainingPage
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(
-                  context, HomePage.routeName); // HomePage
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(
-                  context, MentorOrStudentPofilePage.routeName); // ProfilePage
-              break;
-            default:
-              break;
-          }
+        // Обновляем выбранный индекс
+        setState(() {
+          _selectedIndex = index;
+        });
+
+        // Навигация на соответствующую страницу
+        if (_routes[index] != ModalRoute.of(context)?.settings.name) {
+          Navigator.pushReplacementNamed(context, _routes[index]);
         }
       },
     );
   }
 
-  int _selectedIndex(BuildContext context) {
-    final routeName = ModalRoute.of(context)!.settings.name;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    // We need to consider the case where the user is in the profile page route
-    if (routeName == MentorOrStudentPofilePage.routeName ||
-        routeName == MentorPage.routeName ||
-        routeName == StudentPage.routeName) {
-      return 2; // Profile tab selected if we're in the profile page or mentor/student profile
-    } else if (routeName == TrainingPage.routeName) {
-      return 0; // Training tab selected
+    // Получаем текущий маршрут и устанавливаем индекс
+    final routeName = ModalRoute.of(context)?.settings.name;
+
+    if (routeName == TrainingPage.routeName) {
+      _selectedIndex = 0; // Обучение
     } else if (routeName == HomePage.routeName) {
-      return 1; // Home tab selected
+      _selectedIndex = 1; // Главная
+    } else if (routeName == MentorOrStudentPofilePage.routeName) {
+      _selectedIndex = 2; // Профиль
     }
-
-    return 0; // Default selection (could be changed based on app flow)
   }
 }

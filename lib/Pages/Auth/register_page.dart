@@ -9,7 +9,7 @@ import 'package:test1/Widgets/text_input_widgets/password_textfield_widget.dart'
 import 'package:test1/Widgets/text_input_widgets/role_selection_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/name_textfield_widget.dart';
-import 'package:test1/Pages/Auth/main_page.dart'; // Добавим импорт главной страницы после успешной регистрации
+import 'package:test1/Pages/Auth/main_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
@@ -21,8 +21,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _roleController =
-      TextEditingController(); // Добавлен контроллер для выбора роли
+  final _roleController = TextEditingController();
   final _firsNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _ageController = TextEditingController();
@@ -31,7 +30,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String selectedRole = '';
   bool _isTouched = false;
-  final bool _isAgeValid = true;
   bool _isFormValid = false;
 
   @override
@@ -58,29 +56,30 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  // Проверка на правильность заполнения формы
   void _checkFormValidity() {
     setState(() {
+      bool isValidAge = _ageController.text.isNotEmpty &&
+          RegExp(r'^[1-9][0-9]?$|^120$').hasMatch(_ageController.text.trim());
+
+      bool isValidPassword = _passwordController.text.trim() ==
+          _confirmPasswordController.text.trim();
+
+      bool isValidEmail =
+          RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+              .hasMatch(_emailController.text.trim());
+
+      // Убедимся, что все поля заполнены корректно
       _isFormValid = selectedRole.isNotEmpty &&
           _firsNameController.text.isNotEmpty &&
           _emailController.text.isNotEmpty &&
-          emailConfirmed() &&
-          _ageController.text.isNotEmpty &&
-          _isAgeValid &&
-          passwordConfirmed();
+          isValidEmail &&
+          isValidAge &&
+          _passwordController.text.isNotEmpty &&
+          isValidPassword;
     });
   }
 
-  bool passwordConfirmed() {
-    return _passwordController.text.trim() ==
-        _confirmPasswordController.text.trim();
-  }
-
-  bool emailConfirmed() {
-    return RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
-        .hasMatch(_emailController.text.trim());
-  }
-
-  // Функция регистрации
   Future<void> signUp() async {
     setState(() {
       _isTouched = true;
@@ -94,7 +93,7 @@ class _RegisterPageState extends State<RegisterPage> {
           password: _passwordController.text.trim(),
         );
 
-        // Сохранение данных в Firestore в коллекцию Users
+        // Сохранение данных в Firestore
         await FirebaseFirestore.instance
             .collection('Users')
             .doc(_emailController.text.trim())
@@ -125,7 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
           errorMessage = 'Некорректный email. Пожалуйста, проверьте формат.';
         }
 
-        // Показываем сообщение об ошибке только если виджет не размонтирован
+        // Показываем сообщение об ошибке
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(errorMessage)),

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:test1/Intro%20Screens/intro_page_1.dart';
-import 'package:test1/Intro%20Screens/intro_page_2.dart';
-import 'package:test1/Intro%20Screens/intro_page_3.dart';
 import 'package:test1/Pages/Auth/register_page.dart';
 import 'package:test1/Pages/Auth/login_page.dart';
+import 'package:test1/Pages/Intro%20Screens/intro_page_1.dart';
+import 'package:test1/Pages/Intro%20Screens/intro_page_2.dart';
+import 'package:test1/Pages/Intro%20Screens/intro_page_3.dart';
 import 'package:test1/Widgets/text_widget.dart';
 
 class OnBoardingScreen extends StatefulWidget {

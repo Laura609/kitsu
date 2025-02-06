@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
+import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/courses/lesson_action_button.dart';
 import 'package:test1/Widgets/courses/lesson_card_widget.dart';
 
@@ -196,9 +197,10 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
-      appBar: AppBar(
-        title: Text(widget.lessonTitle),
-        backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
+      appBar: AppBarWidget(
+        text: widget.lessonTitle,
+        isBack: true,
+        showSignOutButton: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -207,8 +209,9 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               LessonCard(
-                  lessonTitle: widget.lessonTitle,
-                  lessonContent: widget.lessonContent),
+                lessonTitle: widget.lessonTitle,
+                lessonContent: widget.lessonContent,
+              ),
               const SizedBox(height: 20),
               LessonActionButton(
                 label: _lessonCompleted ? 'Далее' : 'Завершить урок',

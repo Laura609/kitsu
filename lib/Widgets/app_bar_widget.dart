@@ -17,38 +17,37 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor:
-          const Color.fromARGB(255, 27, 27, 27), // Background color
+      backgroundColor: const Color.fromARGB(255, 27, 27, 27), // Цвет фона
       leading: isBack
           ? IconButton(
               icon: const Icon(
                 Icons.arrow_back,
-                color: Colors.white,
+                color: Colors.white, // Иконка назад белая
               ),
               onPressed: () {
-                // Handle back action
+                // Действие для кнопки назад
                 Navigator.pop(context);
               },
             )
-          : null, // No leading icon if isBack is false
+          : null, // Нет кнопки назад, если isBack = false
       title: Text(
         text,
         style: const TextStyle(
-          color: Colors.white,
+          color: Colors.white, // Белый цвет текста
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
       ),
-      centerTitle: true, // Ensures that the text is centered
+      centerTitle: true, // Центрирование текста
       actions: showSignOutButton
           ? [
               IconButton(
                 icon: const Icon(
                   Icons.exit_to_app,
-                  color: Colors.white,
+                  color: Colors.white, // Белая иконка выхода
                 ),
                 onPressed: () {
-                  // Handle sign-out action
+                  // Действие для кнопки выхода
                   FirebaseAuth.instance.signOut();
                   Navigator.pushReplacement(
                     context,
@@ -59,11 +58,11 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
                 },
               ),
             ]
-          : [], // Если кнопка не должна отображаться, то список пуст
+          : [], // Если кнопка выхода не должна отображаться
     );
   }
 
   @override
   Size get preferredSize =>
-      const Size.fromHeight(kToolbarHeight); // Default AppBar height
+      const Size.fromHeight(kToolbarHeight); // Высота AppBar по умолчанию
 }
