@@ -21,11 +21,19 @@ class UserListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Фото профиля слева
+            // Фото профиля слева или иконка, если фото нет
             CircleAvatar(
               radius: 20, // Подкорректирован радиус для соответствия высоте
-              backgroundImage: NetworkImage(user['photoUrl'] ??
-                  'https://www.example.com/default_image.jpg'),
+              backgroundImage: user['photoUrl'] != null
+                  ? NetworkImage(user['photoUrl'])
+                  : null,
+              child: user['photoUrl'] == null
+                  ? const Icon(
+                      Icons.person,
+                      size: 30, // Размер иконки
+                      color: Colors.white,
+                    )
+                  : null, // Если нет фото, показываем иконку
             ),
             const SizedBox(width: 16),
             // Имя пользователя справа

@@ -4,36 +4,42 @@ import 'package:flutter/material.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
-import 'package:test1/Widgets/user_list_item_widget.dart';
-import 'package:test1/Widgets/user_profile_widget.dart';
+import 'package:test1/Widgets/preview_profile/user_list_item_widget.dart';
+import 'package:test1/Widgets/preview_profile/user_profile_widget.dart';
 
 class HomePage extends StatelessWidget {
   static const routeName = '/home';
 
   const HomePage({super.key});
 
-  // Получаем роль текущего пользователя
-  Future<String> _getUserRole() async {
+  // Получаем навык и роль текущего пользователя
+  Future<Map<String, String>> _getUserData() async {
     final currentUser = FirebaseAuth.instance.currentUser!;
     final userDoc = await FirebaseFirestore.instance
         .collection('Users')
         .doc(currentUser.email)
         .get();
 
+    final skill = userDoc.data()?['selected_skill'] ??
+        ''; // Если нет навыка, то пустая строка
     final role = userDoc.data()?['role'] ?? 'Ученик'; // По умолчанию 'ученик'
-    return role;
+
+    return {'skill': skill, 'role': role};
   }
 
-  // Запрашиваем пользователей с противоположной ролью
-  Stream<List<Map<String, dynamic>>> _fetchUsersByRole(String role) {
+  // Запрашиваем пользователей с таким же навыком и противоположной ролью
+  Stream<List<Map<String, dynamic>>> _fetchUsersBySkillAndRole(
+      String skill, String role) {
+    final oppositeRole = role == 'Ученик' ? 'Ментор' : 'Ученик';
+
     return FirebaseFirestore.instance
         .collection('Users')
-        .where('role', isEqualTo: role)
+        .where('selected_skill', isEqualTo: skill) // Фильтруем по навыку
+        .where('role',
+            isEqualTo: oppositeRole) // Фильтруем по противоположной роли
         .snapshots()
         .map((querySnapshot) {
-      return querySnapshot.docs
-          .map((doc) => doc.data()) // No need for the cast here
-          .toList();
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
     });
   }
 
@@ -46,8 +52,8 @@ class HomePage extends StatelessWidget {
       ),
       body: Container(
         color: const Color.fromRGBO(36, 36, 36, 1), // Цвет фона
-        child: FutureBuilder<String>(
-          future: _getUserRole(),
+        child: FutureBuilder<Map<String, String>>(
+          future: _getUserData(), // Получаем навык и роль пользователя
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: LoadingWidget());
@@ -57,17 +63,19 @@ class HomePage extends StatelessWidget {
               return Center(child: Text('Ошибка: ${snapshot.error}'));
             }
 
-            final role = snapshot.data ?? 'Ученик';
-            final oppositeRole = role == 'Ученик' ? 'Ментор' : 'Ученик';
-            final roleText = oppositeRole == 'Ученик'
-                ? 'Ученики'
-                : 'Менторы'; // Текст для отображения
+            final skill = snapshot.data?['skill'] ?? ''; // Навык пользователя
+            final role =
+                snapshot.data?['role'] ?? 'Ученик'; // Роль пользователя
+
+            // Текст, который будет отображаться перед списком пользователей
+            final roleText = role == 'Ученик' ? 'Менторы' : 'Ученики';
 
             return StreamBuilder<List<Map<String, dynamic>>>(
-              stream: _fetchUsersByRole(oppositeRole),
+              stream: _fetchUsersBySkillAndRole(skill,
+                  role), // Запрашиваем пользователей с таким же навыком и противоположной ролью
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: LoadingWidget());
                 }
 
                 if (userSnapshot.hasError) {
@@ -77,21 +85,20 @@ class HomePage extends StatelessWidget {
                 final users = userSnapshot.data ?? [];
                 if (users.isEmpty) {
                   return const Center(
-                      child: Text('Нет пользователей для отображения.'));
+                      child: Text(
+                          'Нет пользователей с таким навыком и противоположной ролью.'));
                 }
 
                 return Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: Column(
                     children: [
-                      // Добавление текста перед прокруткой с выравниванием по левому краю
                       Align(
-                        alignment:
-                            Alignment.centerLeft, // Выравнивание текста слева
+                        alignment: Alignment.centerLeft,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            roleText, // Показываем "Ученики" или "Менторы"
+                            roleText, // Показываем "Менторы" или "Ученики" в зависимости от роли
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -101,20 +108,16 @@ class HomePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // Горизонтальная прокрутка с пользователями
                       Expanded(
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: List.generate(
-                              (users.length / 2)
-                                  .ceil(), // Количество "пар" пользователей
+                              (users.length / 2).ceil(),
                               (index) {
-                                final user1 =
-                                    users[index * 2]; // Первый пользователь
+                                final user1 = users[index * 2];
                                 final user2 = index * 2 + 1 < users.length
-                                    ? users[index * 2 +
-                                        1] // Второй пользователь (если есть)
+                                    ? users[index * 2 + 1]
                                     : null;
 
                                 return Column(
@@ -122,7 +125,6 @@ class HomePage extends StatelessWidget {
                                     UserListItem(
                                       user: user1,
                                       onTap: () {
-                                        // При нажатии можно переходить на профиль пользователя
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -132,12 +134,10 @@ class HomePage extends StatelessWidget {
                                         );
                                       },
                                     ),
-                                    if (user2 !=
-                                        null) // Если второй пользователь есть
+                                    if (user2 != null)
                                       UserListItem(
                                         user: user2,
                                         onTap: () {
-                                          // При нажатии можно переходить на профиль второго пользователя
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(

@@ -28,75 +28,130 @@ class CourseLessonWidget extends StatefulWidget {
 
 class CourseLessonWidgetState extends State<CourseLessonWidget> {
   bool _lessonCompleted = false;
+  bool _isLoading = true; // Добавляем флаг загрузки
   final logger = Logger();
 
   @override
   void initState() {
     super.initState();
-    _checkLessonCompletion();
+    _initialize();
   }
 
+  // Инициализация и проверка завершённости урока
+  Future<void> _initialize() async {
+    await _checkLessonCompletion();
+    setState(() => _isLoading = false); // Загрузка завершена
+  }
+
+  // Проверка, завершён ли урок
   Future<void> _checkLessonCompletion() async {
-    final currentUser = FirebaseAuth.instance.currentUser!;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null || currentUser.email == null) return;
+
     final userDoc = await _getUserDoc(currentUser.email!);
+    if (userDoc == null || !userDoc.exists) return;
+
     final completedLessons =
-        (userDoc?.data() as Map<String, dynamic>)['completedLessons'] ?? [];
+        (userDoc.data() as Map<String, dynamic>)['completedLessons'] ?? [];
 
     if (completedLessons.contains(widget.lessonId)) {
-      setState(() {
-        _lessonCompleted = true;
-      });
+      setState(() => _lessonCompleted = true);
     }
   }
 
+  // Получение документа пользователя
   Future<DocumentSnapshot?> _getUserDoc(String email) async {
-    final usersCollection = FirebaseFirestore.instance.collection('Users');
-    return await usersCollection.doc(email).get();
+    return FirebaseFirestore.instance.collection('Users').doc(email).get();
   }
 
+  // Обновление прогресса и стрика
   Future<void> _updateProgress() async {
     if (_lessonCompleted) return;
 
-    final currentUser = FirebaseAuth.instance.currentUser!;
-    final userDoc = await _getUserDoc(currentUser.email!);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null || currentUser.email == null) return;
 
+    final userDoc = await _getUserDoc(currentUser.email!);
     if (userDoc == null || !userDoc.exists) {
       await _initializeUser(currentUser.email!);
     }
 
     final completedLessons =
         (userDoc?.data() as Map<String, dynamic>)['completedLessons'] ?? [];
-    if (completedLessons.contains(widget.lessonId)) return;
+
+    if (completedLessons.contains(widget.lessonId)) {
+      setState(() => _lessonCompleted = true);
+      return;
+    }
 
     final allLessons = await _getAllLessons();
     final totalLessons = allLessons.length;
     final completedLessonsCount = completedLessons.length + 1;
-    final newProgress =
-        ((completedLessonsCount / totalLessons) * 100).toStringAsFixed(1);
+
+    // Преобразуем прогресс в целое число
+    final newProgress = ((completedLessonsCount / totalLessons) * 100).toInt();
 
     await FirebaseFirestore.instance
         .collection('Users')
         .doc(currentUser.email)
         .update({
-      'progress': double.parse(newProgress),
+      'progress': newProgress, // Сохраняем как целое число
       'completedLessons': FieldValue.arrayUnion([widget.lessonId]),
     });
 
-    setState(() {
-      _lessonCompleted = true;
-    });
+    await _updateStreak(currentUser.email!);
+    setState(() => _lessonCompleted = true);
   }
 
+  // Инициализация пользователя
   Future<void> _initializeUser(String email) async {
     await FirebaseFirestore.instance.collection('Users').doc(email).set({
-      'progress': 0.0,
+      'progress': 0, // Сохраняем как целое число
       'completedLessons': [],
+      'streakCount': 0,
+      'lastActiveDate': null,
     });
   }
 
+  // Обновление стрика
+  Future<void> _updateStreak(String email) async {
+    final userDoc = await _getUserDoc(email);
+    if (userDoc == null || !userDoc.exists) return;
+
+    final lastActiveDate =
+        (userDoc.data() as Map<String, dynamic>)['lastActiveDate'];
+    final currentDate = DateTime.now().toIso8601String().split('T')[0];
+
+    if (lastActiveDate == null) {
+      await FirebaseFirestore.instance.collection('Users').doc(email).update({
+        'streakCount': 1,
+        'lastActiveDate': currentDate,
+      });
+    } else {
+      final lastDate = DateTime.parse(lastActiveDate);
+      final currentDateObj = DateTime.parse(currentDate);
+
+      if (currentDateObj.difference(lastDate).inDays == 1) {
+        final currentStreak =
+            (userDoc.data() as Map<String, dynamic>)['streakCount'] ?? 0;
+        await FirebaseFirestore.instance.collection('Users').doc(email).update({
+          'streakCount': currentStreak + 1,
+          'lastActiveDate': currentDate,
+        });
+      } else if (currentDateObj.difference(lastDate).inDays > 1) {
+        await FirebaseFirestore.instance.collection('Users').doc(email).update({
+          'streakCount': 1,
+          'lastActiveDate': currentDate,
+        });
+      }
+    }
+  }
+
+  // Получение всех уроков
   Future<List<Map<String, dynamic>>> _getAllLessons() async {
     List<Map<String, dynamic>> allLessons = [];
     final groupIds = ['group_1', 'group_2', 'group_3'];
+
     for (final groupId in groupIds) {
       final lessonsSnapshot = await FirebaseFirestore.instance
           .collection('courses')
@@ -115,6 +170,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
     return allLessons;
   }
 
+  // Получение уроков в группе
   Future<List<Map<String, dynamic>>> _getLessonsInGroup(String groupId) async {
     final lessonsSnapshot = await FirebaseFirestore.instance
         .collection('courses')
@@ -130,6 +186,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
         : [];
   }
 
+  // Переход к следующему уроку
   Future<void> _goToNextLesson(BuildContext context) async {
     try {
       final lessonsInGroup = await _getLessonsInGroup(widget.groupId);
@@ -141,7 +198,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
         final nextGroupId = widget.groupId == 'group_1' ? 'group_2' : 'group_3';
         final nextLessonData =
             await _getNextLessonData(nextGroupId, 'lesson_1');
-        nextLessonId = 'lesson_1'; // First lesson in next group
+        nextLessonId = 'lesson_1'; // Первый урок в следующей группе
         _navigateToNextLesson(
             context, nextLessonData, nextGroupId, nextLessonId);
       } else {
@@ -156,6 +213,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
     }
   }
 
+  // Получение данных следующего урока
   Future<Map<String, dynamic>> _getNextLessonData(
       String groupId, String lessonId) async {
     final lessonDoc = await FirebaseFirestore.instance
@@ -174,6 +232,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
     }
   }
 
+  // Навигация к следующему уроку
   void _navigateToNextLesson(
       BuildContext context,
       Map<String, dynamic> nextLessonData,
@@ -213,12 +272,14 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
                 lessonContent: widget.lessonContent,
               ),
               const SizedBox(height: 20),
-              LessonActionButton(
-                label: _lessonCompleted ? 'Далее' : 'Завершить урок',
-                onPressed: _lessonCompleted
-                    ? () => _goToNextLesson(context)
-                    : _updateProgress,
-              ),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : LessonActionButton(
+                      label: _lessonCompleted ? 'Далее' : 'Завершить урок',
+                      onPressed: _lessonCompleted
+                          ? () => _goToNextLesson(context)
+                          : _updateProgress,
+                    ),
             ],
           ),
         ),

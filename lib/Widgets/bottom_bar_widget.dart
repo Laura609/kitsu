@@ -24,7 +24,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       backgroundColor: const Color.fromRGBO(43, 43, 43, 1),
-      selectedItemColor: const Color.fromRGBO(48, 127, 245, 1),
+      selectedItemColor: const Color.fromRGBO(2, 217, 173, 1),
       unselectedItemColor: const Color.fromRGBO(173, 174, 174, 1),
       type: BottomNavigationBarType.fixed,
       currentIndex: _selectedIndex,

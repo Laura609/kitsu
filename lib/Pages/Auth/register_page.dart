@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Constants/constant.dart';
+import 'package:test1/Pages/skill_mentor_or_student_page.dart';
 import 'package:test1/Widgets/register_button_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/age_textfield_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/email_textfield_widget.dart';
@@ -9,7 +10,6 @@ import 'package:test1/Widgets/text_input_widgets/password_textfield_widget.dart'
 import 'package:test1/Widgets/text_input_widgets/role_selection_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/name_textfield_widget.dart';
-import 'package:test1/Pages/Auth/main_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
@@ -110,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const MainPage()),
+            MaterialPageRoute(builder: (context) => SkillMentorOrStudentPage()),
           );
         }
       } on FirebaseAuthException catch (e) {

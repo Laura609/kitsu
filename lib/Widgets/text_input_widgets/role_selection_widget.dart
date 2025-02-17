@@ -32,7 +32,10 @@ class RoleSelectionWidget extends StatelessWidget {
               onPressed: () {
                 onRoleSelected('Ментор'); // Выбираем роль "Ментор"
               },
-              child: const Text('Ментор'),
+              child: const Text(
+                'Ментор',
+                style: TextStyle(color: Color.fromRGBO(36, 36, 36, 1)),
+              ),
             ),
             const SizedBox(width: 20),
             ElevatedButton(
@@ -44,7 +47,10 @@ class RoleSelectionWidget extends StatelessWidget {
               onPressed: () {
                 onRoleSelected('Ученик'); // Выбираем роль "Ученик"
               },
-              child: const Text('Ученик'),
+              child: const Text(
+                'Ученик',
+                style: TextStyle(color: Color.fromRGBO(36, 36, 36, 1)),
+              ),
             ),
           ],
         ),

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/Auth/main_page.dart';
+import 'package:test1/Pages/Questions/level.dart';
+import 'package:test1/Pages/Questions/mentor_skill.dart';
+import 'package:test1/Pages/Questions/student_skill.dart';
 import 'package:test1/Pages/home_page.dart';
-import 'package:test1/Pages/mentor_profile_page.dart';
+import 'package:test1/Pages/Profiels/mentor_profile_page.dart';
 import 'package:test1/Pages/mentor_or_student_profile_page.dart';
-import 'package:test1/Pages/student_profile_page.dart';
+import 'package:test1/Pages/Profiels/student_profile_page.dart';
 import 'package:test1/Pages/training_page.dart';
 
 class MyApp extends StatelessWidget {
@@ -20,8 +23,14 @@ class MyApp extends StatelessWidget {
       routes: {
         HomePage.routeName: (context) => const HomePage(),
         TrainingPage.routeName: (context) => const TrainingPage(),
-        MentorPage.routeName: (context) => const MentorPage(),
-        StudentPage.routeName: (context) => const StudentPage(),
+        MentorProfilePage.routeName: (context) => const MentorProfilePage(),
+        MentorLevelSelectionPage.routeName: (context) =>
+            const MentorLevelSelectionPage(),
+        MentorSkillSelectionPage.routeName: (context) =>
+            const MentorSkillSelectionPage(),
+        StudentSkillSelectionPage.routeName: (context) =>
+            const StudentSkillSelectionPage(),
+        StudentProfilePage.routeName: (context) => const StudentProfilePage(),
         MentorOrStudentPofilePage.routeName: (context) =>
             MentorOrStudentPofilePage(),
       },

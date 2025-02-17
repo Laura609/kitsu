@@ -1,16 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test1/Pages/Profiels/mentor_profile_page.dart';
-import 'package:test1/Pages/Profiels/student_profile_page.dart';
 import 'package:logger/logger.dart';
+import 'package:test1/Pages/Questions/mentor_skill.dart';
+import 'package:test1/Pages/Questions/student_skill.dart';
+import 'package:test1/Pages/mentor_or_student_profile_page.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 
-class MentorOrStudentPofilePage extends StatelessWidget {
-  static const routeName = '/profile';
-  MentorOrStudentPofilePage({super.key});
+class SkillMentorOrStudentPage extends StatelessWidget {
+  static const routeName = '/SkillMentorOrStudentPage';
+  SkillMentorOrStudentPage({super.key});
 
-  final logger = Logger(); // Создание экземпляра логера
+  final logger = Logger();
 
   @override
   Widget build(BuildContext context) {
@@ -28,51 +29,43 @@ class MentorOrStudentPofilePage extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            // Печать ошибки для диагностики
             logger.e("Ошибка загрузки данных: ${snapshot.error}");
             return const Center(
                 child: Text('Произошла ошибка при загрузке данных.'));
           }
 
-          if (!snapshot.hasData || snapshot.data == null) {
-            // Печать, если данных нет
+          if (!snapshot.hasData || !snapshot.data!.exists) {
             logger.e("Нет данных для текущего пользователя.");
             return const Center(child: Text('Нет данных для отображения.'));
           }
 
           var userData = snapshot.data!.data() as Map<String, dynamic>;
           String role = (userData['role'] ?? '').toString().toLowerCase();
+          String? selectedSkill = userData['selected_skill'];
 
-          logger.d("User role: $role");
+          logger.d("User role: $role, selectedSkill: $selectedSkill");
 
+          // Проверка на выбранный навык
           if (role == 'ментор') {
-            if (ModalRoute.of(context)?.settings.name !=
-                MentorProfilePage.routeName) {
-              Future.microtask(() {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const MentorProfilePage()),
-                );
-              });
+            if (selectedSkill == null || selectedSkill.isEmpty) {
+              // Если выбранный навык пуст, отправляем на выбор навыка
+              return MentorSkillSelectionPage();
+            } else {
+              // Если навык выбран, отправляем на профиль
+              return MentorOrStudentPofilePage();
             }
           } else if (role == 'ученик') {
-            if (ModalRoute.of(context)?.settings.name !=
-                StudentProfilePage.routeName) {
-              Future.microtask(() {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const StudentProfilePage()),
-                );
-              });
+            if (selectedSkill == null || selectedSkill.isEmpty) {
+              // Если выбранный навык пуст, отправляем на выбор навыка
+              return StudentSkillSelectionPage();
+            } else {
+              // Если навык выбран, отправляем на профиль
+              return MentorOrStudentPofilePage();
             }
           } else {
             logger.e("Неверная роль пользователя: $role");
             return const Center(child: Text('Роль пользователя не найдена.'));
           }
-
-          return const Center(child: LoadingWidget());
         },
       ),
     );
