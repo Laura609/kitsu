@@ -61,11 +61,14 @@ class _MentorSkillSelectionPageState extends State<MentorSkillSelectionPage> {
 
       logger.i('Навык сохранен в Firestore: $skillAbbreviation');
 
-      // Переход на страницу уровня
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MentorLevelSelectionPage()),
-      );
+      // Проверяем, что widget еще существует перед навигацией
+      if (mounted) {
+        // Переход на страницу уровня
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MentorLevelSelectionPage()),
+        );
+      }
     } catch (e) {
       logger.e('Ошибка при сохранении навыка в Firestore: $e');
     }

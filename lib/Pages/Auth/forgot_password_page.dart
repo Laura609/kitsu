@@ -25,6 +25,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: _emailController.text.trim());
+
+      // Проверяем, что виджет все еще в дереве
+      if (!mounted) return;
+
       showDialog(
         context: context,
         builder: (context) {
@@ -34,7 +38,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         },
       );
     } on FirebaseAuthException catch (e) {
-      // Removed print statement
+      // Проверяем, что виджет все еще в дереве
+      if (!mounted) return;
+
       showDialog(
         context: context,
         builder: (context) {

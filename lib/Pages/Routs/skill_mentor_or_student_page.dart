@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:test1/Pages/Questions/mentor_skill.dart';
 import 'package:test1/Pages/Questions/student_skill.dart';
-import 'package:test1/Pages/mentor_or_student_profile_page.dart';
+import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 
 class SkillMentorOrStudentPage extends StatelessWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
-import 'package:test1/Pages/mentor_or_student_profile_page.dart';
+import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
 import 'package:test1/Widgets/text_widget.dart';
 
 class StudentSkillSelectionPage extends StatefulWidget {

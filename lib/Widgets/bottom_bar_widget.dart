@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/home_page.dart';
-import 'package:test1/Pages/mentor_or_student_profile_page.dart';
+import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
 import 'package:test1/Pages/training_page.dart';
+import 'package:test1/Pages/friends_page.dart'; // Импортируем страницу друзей
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -11,12 +12,14 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex = 2; // Изначально выбран профиль (номер 2)
+  int _selectedIndex =
+      3; // Изначально выбран профиль (номер 3, после добавления страницы друзей)
 
-  // Маппинг маршрутов
+  // Маппинг маршрутов, добавляем FriendsPage перед профилем
   final List<String> _routes = [
     TrainingPage.routeName, // Страница обучения
     HomePage.routeName, // Главная страница
+    FriendsPage.routeName, // Страница друзей
     MentorOrStudentPofilePage.routeName, // Страница профиля
   ];
 
@@ -36,6 +39,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: "Главная", // Главная страница
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people),
+          label: "Друзья", // Страница друзей
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.account_circle),
@@ -67,8 +74,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
       _selectedIndex = 0; // Обучение
     } else if (routeName == HomePage.routeName) {
       _selectedIndex = 1; // Главная
+    } else if (routeName == FriendsPage.routeName) {
+      _selectedIndex = 2; // Друзья
     } else if (routeName == MentorOrStudentPofilePage.routeName) {
-      _selectedIndex = 2; // Профиль
+      _selectedIndex = 3; // Профиль
     }
   }
 }

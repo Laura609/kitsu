@@ -28,7 +28,7 @@ class CourseLessonWidget extends StatefulWidget {
 
 class CourseLessonWidgetState extends State<CourseLessonWidget> {
   bool _lessonCompleted = false;
-  bool _isLoading = true; // Добавляем флаг загрузки
+  bool _isLoading = true; // Флаг загрузки
   final logger = Logger();
 
   @override
@@ -48,20 +48,20 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null || currentUser.email == null) return;
 
-    final userDoc = await _getUserDoc(currentUser.email!);
-    if (userDoc == null || !userDoc.exists) return;
+    try {
+      final lessonDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.email)
+          .collection('completedLessons')
+          .doc('${widget.groupId}_${widget.lessonId}')
+          .get();
 
-    final completedLessons =
-        (userDoc.data() as Map<String, dynamic>)['completedLessons'] ?? [];
-
-    if (completedLessons.contains(widget.lessonId)) {
-      setState(() => _lessonCompleted = true);
+      setState(() {
+        _lessonCompleted = lessonDoc.exists;
+      });
+    } catch (e) {
+      logger.e("Ошибка при проверке завершённости урока: $e");
     }
-  }
-
-  // Получение документа пользователя
-  Future<DocumentSnapshot?> _getUserDoc(String email) async {
-    return FirebaseFirestore.instance.collection('Users').doc(email).get();
   }
 
   // Обновление прогресса и стрика
@@ -71,88 +71,148 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null || currentUser.email == null) return;
 
-    final userDoc = await _getUserDoc(currentUser.email!);
-    if (userDoc == null || !userDoc.exists) {
-      await _initializeUser(currentUser.email!);
-    }
+    try {
+      // Создаем подколлекцию completedLessons и добавляем туда данные
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.email)
+          .collection('completedLessons')
+          .doc('${widget.groupId}_${widget.lessonId}')
+          .set({
+        'lessonId': widget.lessonId,
+        'groupId': widget.groupId,
+        'completedAt': FieldValue.serverTimestamp(),
+      });
 
-    final completedLessons =
-        (userDoc?.data() as Map<String, dynamic>)['completedLessons'] ?? [];
+      // Обновляем прогресс пользователя
+      final allLessons = await _getAllLessons();
+      final totalLessons = allLessons.length;
+      final completedLessonsCount =
+          (await _getCompletedLessonsCount(currentUser.email!)) + 1;
 
-    if (completedLessons.contains(widget.lessonId)) {
+      final newProgress =
+          ((completedLessonsCount / totalLessons) * 100).toInt();
+
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.email)
+          .update({
+        'progress': newProgress,
+      });
+
+      // Обновляем стрик
+      await _updateStreak(currentUser.email!);
+
+      // Обновляем состояние
       setState(() => _lessonCompleted = true);
-      return;
+    } catch (e) {
+      logger.e("Ошибка при обновлении прогресса: $e");
     }
+  }
 
-    final allLessons = await _getAllLessons();
-    final totalLessons = allLessons.length;
-    final completedLessonsCount = completedLessons.length + 1;
+  // Получение количества завершённых уроков
+  Future<int> _getCompletedLessonsCount(String email) async {
+    try {
+      final completedLessonsSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(email)
+          .collection('completedLessons')
+          .get();
 
-    // Преобразуем прогресс в целое число
-    final newProgress = ((completedLessonsCount / totalLessons) * 100).toInt();
-
-    await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser.email)
-        .update({
-      'progress': newProgress, // Сохраняем как целое число
-      'completedLessons': FieldValue.arrayUnion([widget.lessonId]),
-    });
-
-    await _updateStreak(currentUser.email!);
-    setState(() => _lessonCompleted = true);
+      return completedLessonsSnapshot.docs.length;
+    } catch (e) {
+      logger.e("Ошибка при получении количества завершённых уроков: $e");
+      return 0;
+    }
   }
 
   // Инициализация пользователя
   Future<void> _initializeUser(String email) async {
-    await FirebaseFirestore.instance.collection('Users').doc(email).set({
-      'progress': 0, // Сохраняем как целое число
-      'completedLessons': [],
-      'streakCount': 0,
-      'lastActiveDate': null,
-    });
+    try {
+      await FirebaseFirestore.instance.collection('Users').doc(email).set({
+        'progress': 0,
+        'streakCount': 0,
+        'lastActiveDate': null,
+      });
+    } catch (e) {
+      logger.e("Ошибка при инициализации пользователя: $e");
+    }
   }
 
   // Обновление стрика
   Future<void> _updateStreak(String email) async {
-    final userDoc = await _getUserDoc(email);
-    if (userDoc == null || !userDoc.exists) return;
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance.collection('Users').doc(email).get();
 
-    final lastActiveDate =
-        (userDoc.data() as Map<String, dynamic>)['lastActiveDate'];
-    final currentDate = DateTime.now().toIso8601String().split('T')[0];
+      if (!userDoc.exists) return;
 
-    if (lastActiveDate == null) {
-      await FirebaseFirestore.instance.collection('Users').doc(email).update({
-        'streakCount': 1,
-        'lastActiveDate': currentDate,
-      });
-    } else {
-      final lastDate = DateTime.parse(lastActiveDate);
-      final currentDateObj = DateTime.parse(currentDate);
+      final lastActiveDate = userDoc.data()?['lastActiveDate'];
+      final currentDate = DateTime.now().toIso8601String().split('T')[0];
 
-      if (currentDateObj.difference(lastDate).inDays == 1) {
-        final currentStreak =
-            (userDoc.data() as Map<String, dynamic>)['streakCount'] ?? 0;
-        await FirebaseFirestore.instance.collection('Users').doc(email).update({
-          'streakCount': currentStreak + 1,
-          'lastActiveDate': currentDate,
-        });
-      } else if (currentDateObj.difference(lastDate).inDays > 1) {
+      if (lastActiveDate == null) {
         await FirebaseFirestore.instance.collection('Users').doc(email).update({
           'streakCount': 1,
           'lastActiveDate': currentDate,
         });
+      } else {
+        final lastDate = DateTime.parse(lastActiveDate);
+        final currentDateObj = DateTime.parse(currentDate);
+
+        if (currentDateObj.difference(lastDate).inDays == 1) {
+          final currentStreak = userDoc.data()?['streakCount'] ?? 0;
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(email)
+              .update({
+            'streakCount': currentStreak + 1,
+            'lastActiveDate': currentDate,
+          });
+        } else if (currentDateObj.difference(lastDate).inDays > 1) {
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(email)
+              .update({
+            'streakCount': 1,
+            'lastActiveDate': currentDate,
+          });
+        }
       }
+    } catch (e) {
+      logger.e("Ошибка при обновлении стрика: $e");
     }
   }
 
   // Получение всех уроков
   Future<List<Map<String, dynamic>>> _getAllLessons() async {
     List<Map<String, dynamic>> allLessons = [];
-    final groupIds = ['group_1', 'group_2', 'group_3'];
+    final groupIds = ['group_1', 'group_2', 'group_3', 'group_4'];
 
     for (final groupId in groupIds) {
+      try {
+        final lessonsSnapshot = await FirebaseFirestore.instance
+            .collection('courses')
+            .doc('design_course')
+            .collection('groups')
+            .doc(groupId)
+            .collection('lessons')
+            .orderBy('lessonId')
+            .get();
+
+        if (lessonsSnapshot.docs.isNotEmpty) {
+          allLessons
+              .addAll(lessonsSnapshot.docs.map((doc) => doc.data()).toList());
+        }
+      } catch (e) {
+        logger.e("Ошибка при получении уроков: $e");
+      }
+    }
+    return allLessons;
+  }
+
+  // Получение уроков в группе
+  Future<List<Map<String, dynamic>>> _getLessonsInGroup(String groupId) async {
+    try {
       final lessonsSnapshot = await FirebaseFirestore.instance
           .collection('courses')
           .doc('design_course')
@@ -162,28 +222,13 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
           .orderBy('lessonId')
           .get();
 
-      if (lessonsSnapshot.docs.isNotEmpty) {
-        allLessons
-            .addAll(lessonsSnapshot.docs.map((doc) => doc.data()).toList());
-      }
+      return lessonsSnapshot.docs.isNotEmpty
+          ? lessonsSnapshot.docs.map((doc) => doc.data()).toList()
+          : [];
+    } catch (e) {
+      logger.e("Ошибка при получении уроков в группе: $e");
+      return [];
     }
-    return allLessons;
-  }
-
-  // Получение уроков в группе
-  Future<List<Map<String, dynamic>>> _getLessonsInGroup(String groupId) async {
-    final lessonsSnapshot = await FirebaseFirestore.instance
-        .collection('courses')
-        .doc('design_course')
-        .collection('groups')
-        .doc(groupId)
-        .collection('lessons')
-        .orderBy('lessonId')
-        .get();
-
-    return lessonsSnapshot.docs.isNotEmpty
-        ? lessonsSnapshot.docs.map((doc) => doc.data()).toList()
-        : [];
   }
 
   // Переход к следующему уроку
@@ -194,20 +239,31 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
           .indexWhere((lesson) => lesson['lessonId'] == widget.lessonId);
 
       String nextLessonId;
+      String nextGroupId = widget.groupId;
+      Map<String, dynamic> nextLessonData;
+
       if (currentLessonIndex == lessonsInGroup.length - 1) {
-        final nextGroupId = widget.groupId == 'group_1' ? 'group_2' : 'group_3';
-        final nextLessonData =
-            await _getNextLessonData(nextGroupId, 'lesson_1');
+        // Переход к следующей группе
+        nextGroupId = widget.groupId == 'group_1' ? 'group_2' : 'group_3';
         nextLessonId = 'lesson_1'; // Первый урок в следующей группе
-        _navigateToNextLesson(
-            context, nextLessonData, nextGroupId, nextLessonId);
       } else {
+        // Переход к следующему уроку внутри группы
         nextLessonId = lessonsInGroup[currentLessonIndex + 1]['lessonId'];
-        final nextLessonData =
-            await _getNextLessonData(widget.groupId, nextLessonId);
-        _navigateToNextLesson(
-            context, nextLessonData, widget.groupId, nextLessonId);
       }
+
+      // Получаем данные следующего урока
+      nextLessonData = await _getNextLessonData(nextGroupId, nextLessonId);
+
+      // Сбрасываем состояние завершения урока
+      setState(() {
+        _lessonCompleted = false;
+      });
+
+      // Проверяем, завершен ли новый урок
+      await _checkLessonCompletion();
+
+      // Навигация к следующему уроку
+      _navigateToNextLesson(context, nextLessonData, nextGroupId, nextLessonId);
     } catch (e) {
       logger.e("Ошибка при переходе к следующему уроку: $e");
     }
@@ -216,19 +272,24 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
   // Получение данных следующего урока
   Future<Map<String, dynamic>> _getNextLessonData(
       String groupId, String lessonId) async {
-    final lessonDoc = await FirebaseFirestore.instance
-        .collection('courses')
-        .doc('design_course')
-        .collection('groups')
-        .doc(groupId)
-        .collection('lessons')
-        .doc(lessonId)
-        .get();
+    try {
+      final lessonDoc = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc('design_course')
+          .collection('groups')
+          .doc(groupId)
+          .collection('lessons')
+          .doc(lessonId)
+          .get();
 
-    if (lessonDoc.exists) {
-      return lessonDoc.data() as Map<String, dynamic>;
-    } else {
-      throw Exception("Lesson not found");
+      if (lessonDoc.exists) {
+        return lessonDoc.data() as Map<String, dynamic>;
+      } else {
+        throw Exception("Lesson not found");
+      }
+    } catch (e) {
+      logger.e("Ошибка при получении данных следующего урока: $e");
+      throw e;
     }
   }
 

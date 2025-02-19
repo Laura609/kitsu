@@ -26,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   // Функция для входа
   Future<void> signIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Пожалуйста, заполните все поля")),
       );
@@ -33,6 +34,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // Показать загрузочную страницу
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const LoadingWidget()),
@@ -46,15 +48,18 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       // Закрытие загрузочной страницы после успешного входа
+      if (!mounted) return;
       Navigator.of(context).pop(); // Закрываем загрузочную страницу
 
       // Перенаправление на главную страницу после успешного входа
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
             builder: (context) => const MainPage()), // Переход на главный экран
       );
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       Navigator.of(context).pop(); // Закрываем загрузочную страницу
 
       // Обработка различных ошибок FirebaseAuth
@@ -68,10 +73,12 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       // Показ сообщения об ошибке
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
+      if (!mounted) return;
       Navigator.of(context).pop(); // Закрываем загрузочную страницу
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Произошла ошибка. Попробуйте позже.")),
