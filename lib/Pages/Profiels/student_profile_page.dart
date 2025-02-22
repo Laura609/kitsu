@@ -151,7 +151,10 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             ),
           ],
         ),
-        _buildProgressWidget(userData['progress'] ?? 0),
+        ProgressWidget(
+          courseName: 'Курс по дизайну', // Название курса
+          icon: Icons.school, // Иконка для курса
+        ),
       ],
     );
   }
@@ -179,26 +182,6 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         textTitleColor: Colors.white,
         textTitleSize: size,
       ),
-    );
-  }
-
-  Widget _buildProgressWidget(dynamic progress) {
-    // Преобразуем прогресс в double и ограничиваем его
-    double progressValue = progress is int
-        ? progress.toDouble() / 100.0 // Преобразуем проценты в дробь
-        : (progress is double
-            ? progress.clamp(0.0, 1.0) // Ограничиваем значение
-            : 0.0);
-
-    return Column(
-      children: [
-        ProgressWidget(
-          courseName: 'Курс по дизайну',
-          progress: progressValue, // Передаём double
-          icon: Icons.school,
-        ),
-        const SizedBox(height: 5),
-      ],
     );
   }
 }

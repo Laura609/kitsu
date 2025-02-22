@@ -1,16 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ProgressWidget extends StatelessWidget {
+class ProgressWidget extends StatefulWidget {
   final String courseName;
-  final double progress;
   final IconData icon;
 
   const ProgressWidget({
     super.key,
     required this.courseName,
-    required this.progress,
     required this.icon,
   });
+
+  @override
+  State<ProgressWidget> createState() => _ProgressWidgetState();
+}
+
+class _ProgressWidgetState extends State<ProgressWidget> {
+  double _progress = 0.0;
+  int _streak = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+    _checkStreak();
+  }
+
+  // Функция для загрузки прогресса
+  Future<void> _loadProgress() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null || currentUser.email == null) return;
+
+    // Получаем данные пользователя
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.email)
+        .get();
+
+    if (userDoc.exists) {
+      // Получаем прогресс из Firestore
+      final progress = userDoc.data()?['progress'] ?? 0;
+      setState(() {
+        _progress = progress.toDouble();
+      });
+    }
+  }
+
+  // Функция для проверки стрика
+  Future<void> _checkStreak() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null || currentUser.email == null) return;
+
+    // Получаем данные пользователя
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.email)
+        .get();
+
+    if (userDoc.exists) {
+      final lastActiveDate = userDoc.data()?['lastActiveDate']?.toDate();
+
+      if (lastActiveDate != null) {
+        final currentDate = DateTime.now();
+        final timeDifference = currentDate.difference(lastActiveDate).inHours;
+
+        // Если прошло меньше 24 часов
+        if (timeDifference < 24) {
+          setState(() {
+            _streak =
+                userDoc.data()?['streakCount'] ?? 0 + 1; // Увеличиваем стрик
+          });
+        } else {
+          setState(() {
+            _streak = 0; // Сбрасываем стрик
+          });
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,20 +97,30 @@ class ProgressWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, color: Colors.white),
+          Icon(widget.icon, color: Colors.white),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                courseName,
+                widget.courseName,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
-          Text(
-            '${progress.toStringAsFixed(0)}%', // Убираем дробную часть
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${_progress.toStringAsFixed(0)}%', // Показываем процент прогресса
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                'Стрик: $_streak', // Показываем текущий стрик
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ],
           ),
         ],
       ),
