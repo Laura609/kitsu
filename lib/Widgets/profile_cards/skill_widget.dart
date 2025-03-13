@@ -1,42 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 
 class SkillWidget extends StatelessWidget {
-  final String text; // Параметр для текста (например, "Выбранное направление")
+  final String text; // Параметр для текста
+  final String email; // Параметр для email выбранного пользователя
 
   const SkillWidget({
     super.key,
-    required this.text, // Обязательный параметр для текста
+    required this.text,
+    required this.email, // Обязательный параметр для email
   });
 
   // Метод для получения выбранного направления
   Future<String?> _getSelectedSkill() async {
-    final logger = Logger();
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    if (currentUser == null || currentUser.email == null) {
-      logger.d("Пользователь не авторизован или email отсутствует");
-      return null;
-    }
-
     try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(currentUser.email)
-          .get();
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance.collection('Users').doc(email).get();
 
       if (userDoc.exists) {
         final selectedSkill = userDoc['selected_skill'] as String?;
         return selectedSkill;
       } else {
-        logger.d("Документ пользователя не найден");
         return null;
       }
     } catch (e) {
-      logger.e('Ошибка при получении выбранного направления: $e');
-      return null;
+      return null; // В случае ошибки просто возвращаем null
     }
   }
 
@@ -47,31 +36,21 @@ class SkillWidget extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height;
 
     // Вычисляем размеры элементов относительно экрана
-    double containerWidth = screenWidth * 0.3; // 30% ширины экрана
-    double containerHeight = screenHeight * 0.16; // 12% высоты экрана
-    double iconSize = screenWidth * 0.1; // 10% ширины экрана для иконки
-    double textSize =
-        screenWidth * 0.04; // 4% ширины экрана для основного текста
-    double descriptionTextSize =
-        screenWidth * 0.03; // 3% ширины экрана для дополнительного текста
+    double containerWidth = screenWidth * 0.3;
+    double containerHeight = screenHeight * 0.16;
+    double iconSize = screenWidth * 0.1;
+    double textSize = screenWidth * 0.04;
+    double descriptionTextSize = screenWidth * 0.03;
 
     return FutureBuilder<String?>(
       future: _getSelectedSkill(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         }
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Ошибка: ${snapshot.error}',
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
-        }
-
-        String? selectedSkill = snapshot.data;
+        // Если данных нет или произошла ошибка, показываем "Не выбрано"
+        String? selectedSkill = snapshot.data ?? 'Не выбрано';
 
         return Container(
           height: containerHeight,
@@ -95,30 +74,27 @@ class SkillWidget extends StatelessWidget {
               const SizedBox(height: 10),
               // Название скилла
               Text(
-                selectedSkill ?? 'Не выбрано',
+                selectedSkill,
                 style: TextStyle(
-                  fontSize: textSize, // Основной текст (4% ширины экрана)
+                  fontSize: textSize,
                   color: Colors.white,
-                  fontWeight: FontWeight.bold, // Жирный шрифт
+                  fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center, // Выравнивание по центру
-                maxLines: 2, // Максимум 2 строки
-                overflow: TextOverflow
-                    .ellipsis, // Обрезать текст, если он слишком длинный
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 10),
               // Описание (переданный текст)
               Text(
                 text,
                 style: TextStyle(
-                  fontSize:
-                      descriptionTextSize, // Дополнительный текст (3% ширины экрана)
+                  fontSize: descriptionTextSize,
                   color: Colors.white,
                 ),
-                textAlign: TextAlign.center, // Выравнивание по центру
-                maxLines: 2, // Максимум 2 строки
-                overflow: TextOverflow
-                    .ellipsis, // Обрезать текст, если он слишком длинный
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

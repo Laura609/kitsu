@@ -18,13 +18,11 @@ class ProgressWidget extends StatefulWidget {
 
 class _ProgressWidgetState extends State<ProgressWidget> {
   double _progress = 0.0;
-  int _streak = 0;
 
   @override
   void initState() {
     super.initState();
     _loadProgress();
-    _checkStreak();
   }
 
   // Функция для загрузки прогресса
@@ -41,41 +39,11 @@ class _ProgressWidgetState extends State<ProgressWidget> {
     if (userDoc.exists) {
       // Получаем прогресс из Firestore
       final progress = userDoc.data()?['progress'] ?? 0;
-      setState(() {
-        _progress = progress.toDouble();
-      });
-    }
-  }
-
-  // Функция для проверки стрика
-  Future<void> _checkStreak() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null || currentUser.email == null) return;
-
-    // Получаем данные пользователя
-    final userDoc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser.email)
-        .get();
-
-    if (userDoc.exists) {
-      final lastActiveDate = userDoc.data()?['lastActiveDate']?.toDate();
-
-      if (lastActiveDate != null) {
-        final currentDate = DateTime.now();
-        final timeDifference = currentDate.difference(lastActiveDate).inHours;
-
-        // Если прошло меньше 24 часов
-        if (timeDifference < 24) {
-          setState(() {
-            _streak =
-                userDoc.data()?['streakCount'] ?? 0 + 1; // Увеличиваем стрик
-          });
-        } else {
-          setState(() {
-            _streak = 0; // Сбрасываем стрик
-          });
-        }
+      if (mounted) {
+        // Проверяем, что виджет еще монтирован
+        setState(() {
+          _progress = progress.toDouble();
+        });
       }
     }
   }
@@ -85,6 +53,15 @@ class _ProgressWidgetState extends State<ProgressWidget> {
     // Получаем ширину экрана и вычисляем 90% от неё
     double screenWidth = MediaQuery.of(context).size.width;
     double containerWidth = screenWidth * 0.9;
+
+    // Устанавливаем цвет иконки и текста в зависимости от прогресса
+    Color iconColor = _progress == 100
+        ? const Color.fromRGBO(2, 217, 173, 1) // Зеленый цвет при 100%
+        : Colors.grey; // Серый цвет при прогрессе меньше 100%
+
+    Color textColor = _progress == 100
+        ? const Color.fromRGBO(2, 217, 173, 1) // Зеленый цвет при 100%
+        : Colors.grey; // Серый цвет при прогрессе меньше 100%
 
     return Container(
       width: containerWidth,
@@ -97,13 +74,14 @@ class _ProgressWidgetState extends State<ProgressWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(widget.icon, color: Colors.white),
+          Icon(widget.icon, color: iconColor), // Иконка с условным цветом
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 widget.courseName,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                    color: textColor, fontSize: 16), // Текст с условным цветом
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -113,12 +91,9 @@ class _ProgressWidgetState extends State<ProgressWidget> {
             children: [
               Text(
                 '${_progress.toStringAsFixed(0)}%', // Показываем процент прогресса
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                'Стрик: $_streak', // Показываем текущий стрик
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 16), // Процент с условным цветом
               ),
             ],
           ),

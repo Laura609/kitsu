@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,7 +19,7 @@ class StreakManager {
   static Future<void> updateStreak(String email) async {
     final userDoc = await _getUserDoc(email);
     if (userDoc == null || !userDoc.exists) {
-      print("User document not found.");
+      log("User document not found.");
       return;
     }
 
@@ -27,8 +29,8 @@ class StreakManager {
         .toIso8601String()
         .split('T')[0]; // Только дата без времени
 
-    print("Current date: $currentDate");
-    print("Last active date: $lastActiveDate");
+    log("Current date: $currentDate");
+    log("Last active date: $lastActiveDate");
 
     // Если нет даты последней активности
     if (lastActiveDate == null) {
@@ -51,7 +53,7 @@ class StreakManager {
         // Если пропущен день — сбрасываем стрик на 1
         await _updateFirestoreStreak(email, currentDate, 1);
       } else {
-        print("Streak not updated, no need.");
+        log("Streak not updated, no need.");
       }
     }
   }
@@ -64,14 +66,13 @@ class StreakManager {
         'streakCount': streakCount,
         'lastActiveDate': currentDate,
       });
-      print(
-          "Firestore updated: Streak $streakCount, Last Active Date $currentDate");
+      log("Firestore updated: Streak $streakCount, Last Active Date $currentDate");
 
       // Сохраняем стрик в SharedPreferences
       await updateStreakInPrefs(streakCount);
       await updateLastActiveDateInPrefs(currentDate);
     } catch (e) {
-      print("Error updating Firestore: $e");
+      log("Error updating Firestore: $e");
     }
   }
 
@@ -79,14 +80,14 @@ class StreakManager {
   static Future<void> updateStreakInPrefs(int streakCount) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_streakCountKey, streakCount);
-    print("Streak updated in SharedPreferences: $streakCount");
+    log("Streak updated in SharedPreferences: $streakCount");
   }
 
   // Обновление даты последней активности в SharedPreferences
   static Future<void> updateLastActiveDateInPrefs(String currentDate) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastActiveDateKey, currentDate);
-    print("Last active date updated in SharedPreferences: $currentDate");
+    log("Last active date updated in SharedPreferences: $currentDate");
   }
 
   // Получить документ пользователя из Firestore
@@ -94,7 +95,7 @@ class StreakManager {
     try {
       return FirebaseFirestore.instance.collection('Users').doc(email).get();
     } catch (e) {
-      print("Error fetching user document: $e");
+      log("Error fetching user document: $e");
       return null;
     }
   }
@@ -103,6 +104,6 @@ class StreakManager {
   static Future<void> resetStreakInPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_streakCountKey);
-    print("Streak reset in SharedPreferences.");
+    log("Streak reset in SharedPreferences.");
   }
 }

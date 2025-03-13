@@ -52,6 +52,7 @@ class NameTextFieldWidget extends StatelessWidget {
                   size: 20,
                   color: Colors.grey.shade500,
                 ),
+                contentPadding: EdgeInsets.symmetric(vertical: 12.0),
               ),
             ),
           ),

@@ -1,29 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 
 class MentorStudentCountWidget extends StatelessWidget {
   final String text; // Параметр для текста
   final IconData icon; // Параметр для иконки
+  final String email; // Параметр для email выбранного пользователя
 
   const MentorStudentCountWidget({
     super.key,
-    required this.text, // Обязательный параметр для текста
-    required this.icon, // Обязательный параметр для иконки
+    required this.text,
+    required this.icon,
+    required this.email, // Обязательный параметр для email
   });
 
   // Метод для получения количества студентов
   Future<int> _getStudentCount() async {
-    final logger = Logger();
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('students')
-          .where('isLearning', isEqualTo: true)
+          .where('mentor_email', isEqualTo: email)
           .get();
 
       return snapshot.size; // Возвращаем количество студентов
     } catch (e) {
-      logger.e('Ошибка при получении количества студентов: $e');
       return 0; // Возвращаем 0 в случае ошибки
     }
   }
@@ -44,7 +44,7 @@ class MentorStudentCountWidget extends StatelessWidget {
       future: _getStudentCount(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         }
 
         // Обрабатываем ошибку, если она возникла, или если данные отсутствуют
@@ -67,7 +67,7 @@ class MentorStudentCountWidget extends StatelessWidget {
               const SizedBox(height: 10),
               // Иконка
               Icon(
-                icon, // Используем переданную иконку
+                icon,
                 size: iconSize,
                 color: Colors.white,
               ),
@@ -81,7 +81,7 @@ class MentorStudentCountWidget extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                text, // Используем переданный текст
+                text,
                 style: TextStyle(
                   fontSize: textSize * 0.6,
                   color: Colors.white,

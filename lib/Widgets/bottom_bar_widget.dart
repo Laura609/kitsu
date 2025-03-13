@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:test1/Pages/chats_page.dart';
 import 'package:test1/Pages/home_page.dart';
 import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
-import 'package:test1/Pages/training_page.dart';
 import 'package:test1/Pages/friends_page.dart'; // Импортируем страницу друзей
 
 class BottomNavBar extends StatefulWidget {
@@ -12,14 +12,13 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex =
-      3; // Изначально выбран профиль (номер 3, после добавления страницы друзей)
+  int _selectedIndex = 3;
 
   // Маппинг маршрутов, добавляем FriendsPage перед профилем
   final List<String> _routes = [
-    TrainingPage.routeName, // Страница обучения
     HomePage.routeName, // Главная страница
     FriendsPage.routeName, // Страница друзей
+    ChatsPage.routeName,
     MentorOrStudentPofilePage.routeName, // Страница профиля
   ];
 
@@ -33,16 +32,16 @@ class _BottomNavBarState extends State<BottomNavBar> {
       currentIndex: _selectedIndex,
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.forum),
-          label: "Обучение", // Страница обучения
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: "Главная", // Главная страница
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.people),
           label: "Друзья", // Страница друзей
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat_rounded),
+          label: "Чат", // Страница друзей
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.account_circle),
@@ -70,14 +69,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
     // Получаем текущий маршрут и устанавливаем индекс
     final routeName = ModalRoute.of(context)?.settings.name;
 
-    if (routeName == TrainingPage.routeName) {
-      _selectedIndex = 0; // Обучение
-    } else if (routeName == HomePage.routeName) {
-      _selectedIndex = 1; // Главная
+    if (routeName == HomePage.routeName) {
+      _selectedIndex = 0; // Главная
     } else if (routeName == FriendsPage.routeName) {
+      _selectedIndex = 1; // Главная
+    } else if (routeName == ChatsPage.routeName) {
       _selectedIndex = 2; // Друзья
     } else if (routeName == MentorOrStudentPofilePage.routeName) {
-      _selectedIndex = 3; // Профиль
+      _selectedIndex = 2; // Друзья
     }
   }
 }

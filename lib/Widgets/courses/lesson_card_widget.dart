@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 class LessonCard extends StatelessWidget {
   final String lessonTitle;
   final String lessonContent;
+  final bool isCompleted;
 
-  const LessonCard(
-      {super.key, required this.lessonTitle, required this.lessonContent});
+  const LessonCard({
+    super.key,
+    required this.lessonTitle,
+    required this.lessonContent,
+    this.isCompleted = false,
+  });
 
   @override
   Widget build(BuildContext context) {

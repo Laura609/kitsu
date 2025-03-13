@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -44,9 +46,10 @@ class FriendsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
       appBar: AppBarWidget(
         text: 'Друзья',
-        isBack: true,
+        isBack: false,
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _fetchFriends(),
@@ -99,29 +102,30 @@ class FriendsPage extends StatelessWidget {
           const BottomNavBar(), // Добавляем BottomNavigationBar
     );
   }
+}
 
-  // Метод для удаления друга
-  Future<void> _removeFriend(String friendEmail) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
+// Метод для удаления друга
+Future<void> _removeFriend(String friendEmail) async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser == null) return;
 
-    try {
-      final currentUserFriendsRef = FirebaseFirestore.instance
-          .collection('Users')
-          .doc(currentUser.email)
-          .collection('friends')
-          .doc(friendEmail);
+  try {
+    // Удаляем друга из списка текущего пользователя
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.email)
+        .collection('friends')
+        .doc(friendEmail)
+        .delete();
 
-      final friendFriendsRef = FirebaseFirestore.instance
-          .collection('Users')
-          .doc(friendEmail)
-          .collection('friends')
-          .doc(currentUser.email);
-
-      await currentUserFriendsRef.delete();
-      await friendFriendsRef.delete();
-    } catch (e) {
-      logger.e('Ошибка при удалении друга: $e');
-    }
+    // Удаляем текущего пользователя из списка друга
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(friendEmail)
+        .collection('friends')
+        .doc(currentUser.email)
+        .delete();
+  } catch (e) {
+    log('Ошибка при удалении друга: $e');
   }
 }

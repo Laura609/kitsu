@@ -6,6 +6,7 @@ import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/courses/lesson_action_button.dart';
 import 'package:test1/Widgets/courses/lesson_card_widget.dart';
 import 'package:test1/Widgets/courses/streak_manager.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 
 class CourseLessonWidget extends StatefulWidget {
   final String lessonId;
@@ -13,6 +14,7 @@ class CourseLessonWidget extends StatefulWidget {
   final String lessonContent;
   final String nextLessonId;
   final String groupId;
+  final VoidCallback? onLessonCompleted;
 
   const CourseLessonWidget({
     super.key,
@@ -21,6 +23,7 @@ class CourseLessonWidget extends StatefulWidget {
     required this.lessonContent,
     required this.nextLessonId,
     required this.groupId,
+    this.onLessonCompleted,
   });
 
   @override
@@ -46,21 +49,25 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
 
   // Проверка, завершён ли урок
   Future<void> _checkLessonCompletion() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null || currentUser.email == null) return;
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null || currentUser.email == null) return;
 
-    final userDoc = await _getUserDoc(currentUser.email!);
-    if (userDoc == null || !userDoc.exists) return;
+      final userDoc = await _getUserDoc(currentUser.email!);
+      if (userDoc == null || !userDoc.exists) return;
 
-    final completedLessonsSnapshot = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser.email)
-        .collection('completedLessons')
-        .doc('${widget.groupId}_${widget.lessonId}')
-        .get();
+      final completedLessonsSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.email)
+          .collection('completedLessons')
+          .doc('${widget.groupId}_${widget.lessonId}')
+          .get();
 
-    if (completedLessonsSnapshot.exists) {
-      setState(() => _lessonCompleted = true);
+      if (completedLessonsSnapshot.exists) {
+        setState(() => _lessonCompleted = true);
+      }
+    } catch (e) {
+      logger.e("Error checking lesson completion: $e");
     }
   }
 
@@ -73,61 +80,117 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
   Future<void> _updateProgress() async {
     if (_lessonCompleted) return;
 
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null || currentUser.email == null) return;
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null || currentUser.email == null) return;
 
-    final userDoc = await _getUserDoc(currentUser.email!);
-    if (userDoc == null || !userDoc.exists) {
-      await _initializeUser(currentUser.email!);
-    }
+      final userDoc = await _getUserDoc(currentUser.email!);
+      if (userDoc == null || !userDoc.exists) {
+        await _initializeUser(currentUser.email!);
+      }
 
-    // Записываем завершённый урок в подколлекцию completedLessons
-    final completedLessonsRef = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser.email)
-        .collection('completedLessons');
+      final completedLessonsRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.email)
+          .collection('completedLessons');
 
-    final lessonKey = '${widget.groupId}_${widget.lessonId}';
-    final completedLessonsSnapshot =
-        await completedLessonsRef.doc(lessonKey).get();
+      final lessonKey = '${widget.groupId}_${widget.lessonId}';
+      final completedLessonsSnapshot =
+          await completedLessonsRef.doc(lessonKey).get();
 
-    if (completedLessonsSnapshot.exists) {
+      if (completedLessonsSnapshot.exists) {
+        setState(() => _lessonCompleted = true);
+        return;
+      }
+
+      await completedLessonsRef.doc(lessonKey).set({
+        'lessonTitle': widget.lessonTitle,
+        'groupId': widget.groupId,
+        'completedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Обновляем стрик
+      await StreakManager.updateStreak(currentUser.email!); // Обновляем стрик
+
+      // Обновляем прогресс пользователя
+      await _updateUserProgress(currentUser.email!);
+
       setState(() => _lessonCompleted = true);
-      return;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Урок завершён!')),
+        );
+
+        // Вызываем callback, если он передан
+        if (widget.onLessonCompleted != null) {
+          widget.onLessonCompleted!();
+        }
+      }
+    } catch (e) {
+      logger.e("Error updating progress: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ошибка при завершении урока')),
+        );
+      }
     }
+  }
 
-    // Записываем урок как завершённый в подколлекцию
-    await completedLessonsRef.doc(lessonKey).set({
-      'lessonTitle': widget.lessonTitle,
-      'groupId': widget.groupId,
-      'completedAt': FieldValue.serverTimestamp(),
-    });
+// Go to next lesson
+  Future<void> _goToNextLesson(BuildContext context) async {
+    try {
+      final lessonsInGroup = await _getLessonsInGroup(widget.groupId);
+      final currentLessonIndex = lessonsInGroup
+          .indexWhere((lesson) => lesson['lessonId'] == widget.lessonId);
 
-    // Получаем все уроки курса
+      String nextLessonId;
+      if (currentLessonIndex == lessonsInGroup.length - 1) {
+        final nextGroupId = _getNextGroupId(widget.groupId);
+        if (nextGroupId != null) {
+          final nextLessonData =
+              await _getNextLessonData(nextGroupId, 'lesson_1');
+          nextLessonId = 'lesson_1';
+          _navigateToNextLesson(
+              context, nextLessonData, nextGroupId, nextLessonId);
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Поздравляем, вы завершили курс!')),
+            );
+          }
+        }
+      } else {
+        nextLessonId = lessonsInGroup[currentLessonIndex + 1]['lessonId'];
+        final nextLessonData =
+            await _getNextLessonData(widget.groupId, nextLessonId);
+        _navigateToNextLesson(
+            context, nextLessonData, widget.groupId, nextLessonId);
+      }
+    } catch (e) {
+      logger.e("Ошибка при переходе к следующему уроку: $e");
+    }
+  }
+
+  // Обновление прогресса пользователя
+  Future<void> _updateUserProgress(String email) async {
     final allLessons = await _getAllLessons();
     final totalLessons = allLessons.length;
 
-    // Получаем завершённые уроки
     final completedLessonsSnapshotAll = await FirebaseFirestore.instance
         .collection('Users')
-        .doc(currentUser.email)
+        .doc(email)
         .collection('completedLessons')
         .get();
 
     final completedLessonsCount = completedLessonsSnapshotAll.docs.length;
 
-    // Вычисляем прогресс как отношение завершённых уроков к общему числу
     final newProgress = ((completedLessonsCount / totalLessons) * 100).toInt();
 
-    // Обновляем прогресс
     await FirebaseFirestore.instance
         .collection('Users')
-        .doc(currentUser.email)
+        .doc(email)
         .update({'progress': newProgress});
-
-    // Обновляем стрик с помощью StreakManager
-    await StreakManager.updateStreak(currentUser.email!);
-    setState(() => _lessonCompleted = true);
   }
 
   // Инициализация пользователя
@@ -178,40 +241,6 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
         : [];
   }
 
-  // Переход к следующему уроку
-  Future<void> _goToNextLesson(BuildContext context) async {
-    try {
-      final lessonsInGroup = await _getLessonsInGroup(widget.groupId);
-      final currentLessonIndex = lessonsInGroup
-          .indexWhere((lesson) => lesson['lessonId'] == widget.lessonId);
-
-      String nextLessonId;
-      if (currentLessonIndex == lessonsInGroup.length - 1) {
-        final nextGroupId = _getNextGroupId(widget.groupId);
-        if (nextGroupId != null) {
-          final nextLessonData = await _getNextLessonData(nextGroupId,
-              'lesson_1'); // Переход на первый урок следующей группы
-          nextLessonId = 'lesson_1'; // Первый урок следующей группы
-          _navigateToNextLesson(
-              context, nextLessonData, nextGroupId, nextLessonId);
-        } else {
-          // Можно добавить уведомление о завершении курса, если нет следующей группы
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Поздравляем, вы завершили курс!')),
-          );
-        }
-      } else {
-        nextLessonId = lessonsInGroup[currentLessonIndex + 1]['lessonId'];
-        final nextLessonData =
-            await _getNextLessonData(widget.groupId, nextLessonId);
-        _navigateToNextLesson(
-            context, nextLessonData, widget.groupId, nextLessonId);
-      }
-    } catch (e) {
-      logger.e("Ошибка при переходе к следующему уроку: $e");
-    }
-  }
-
   // Получение данных следующего урока
   Future<Map<String, dynamic>> _getNextLessonData(
       String groupId, String lessonId) async {
@@ -246,6 +275,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
           lessonContent: nextLessonData['content'],
           nextLessonId: nextLessonData['nextLessonId'] ?? '',
           groupId: groupId,
+          onLessonCompleted: widget.onLessonCompleted, // Передаем callback
         ),
       ),
     );
@@ -261,7 +291,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
       case 'group_3':
         return 'group_4';
       default:
-        return null; // Если нет следующей группы
+        return null;
     }
   }
 
@@ -286,7 +316,7 @@ class CourseLessonWidgetState extends State<CourseLessonWidget> {
               ),
               const SizedBox(height: 20),
               _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: LoadingWidget())
                   : LessonActionButton(
                       label: _lessonCompleted ? 'Далее' : 'Завершить урок',
                       onPressed: _lessonCompleted

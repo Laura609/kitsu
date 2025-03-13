@@ -152,9 +152,12 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Center(
               child: Column(
                 children: <Widget>[
-                  const SizedBox(height: 30),
-                  const Image(image: AssetImage('assets/logo.png')),
-                  const SizedBox(height: 20),
+                  const Image(
+                    image: AssetImage('assets/rrr.png'),
+                    width: 150,
+                    height: null,
+                    fit: BoxFit.contain,
+                  ),
                   const TextWidget(
                     textTitle: 'Добро пожаловать!',
                     textTitleColor: Colors.white,
@@ -171,7 +174,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     isTouched: _isTouched,
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                   NameTextFieldWidget(
                     hintText: 'Имя',
                     controller: _firsNameController,
@@ -183,13 +186,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: _emailController,
                     isTouched: _isTouched,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   AgeTextFieldWidget(
                     hintText: 'Возраст',
                     controller: _ageController,
                     isTouched: _isTouched,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   PasswordTextFieldWidget(
                     hintText: 'Пароль',
                     controller: _passwordController,
@@ -202,7 +205,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     confirmPassword: _passwordController.text,
                     isTouched: _isTouched,
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   RegisterButtonWidget(
                     isFormValid: _isFormValid,
                     onTap: signUp,

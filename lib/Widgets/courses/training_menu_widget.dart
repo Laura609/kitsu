@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Widgets/courses/group_title_widget.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 
 class TrainingMenu extends StatelessWidget {
   const TrainingMenu({super.key});
@@ -15,7 +16,7 @@ class TrainingMenu extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         }
         if (snapshot.hasError || !snapshot.hasData) {
           return const Center(child: Text('Ошибка загрузки данных'));

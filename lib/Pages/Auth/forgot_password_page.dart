@@ -33,7 +33,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         context: context,
         builder: (context) {
           return const AlertDialog(
-            content: Text('Ссылка для сброса пароля отправлена!'),
+            backgroundColor: Color.fromRGBO(69, 69, 69, 1),
+            content: Text('Ссылка для сброса пароля отправлена!',
+                style: TextStyle(color: Colors.white)),
           );
         },
       );
@@ -55,9 +57,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
       appBar: AppBar(
         automaticallyImplyLeading: true,
         centerTitle: true,
+        foregroundColor: Colors.white,
+        backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
         title: const Text('Сброс пароля'),
       ),
       body: Column(
@@ -68,7 +73,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             child: Text(
               'Напишите свой Email,\nи мы вышлем вам письмо',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, color: Colors.white),
             ),
           ),
 

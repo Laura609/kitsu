@@ -1,29 +1,60 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 
 class StreakWidget extends StatelessWidget {
   final String text; // Параметр для текста
+  final String email; // Параметр для email выбранного пользователя
 
   const StreakWidget({
     super.key,
-    required this.text, // Обязательный параметр для текста
+    required this.text,
+    required this.email, // Обязательный параметр для email
   });
 
+  Future<void> initializeStreak() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(currentUser.email)
+          .get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        if (!userData.containsKey('streakCount')) {
+          await userDoc.reference.update({'streakCount': 0}); // Инициализация
+        }
+      }
+    } catch (e) {
+      log('Ошибка при инициализации стрика: $e');
+    }
+  }
+
   // Метод для получения текущего стрика
-  Future<int> _getStreakCount(String email) async {
-    final logger = Logger();
+  Future<int> _getStreakCount() async {
     try {
       final userDoc =
           await FirebaseFirestore.instance.collection('Users').doc(email).get();
 
       if (userDoc.exists) {
-        return (userDoc.data() as Map<String, dynamic>)['streakCount'] ?? 0;
+        final userData = userDoc.data() as Map<String, dynamic>;
+
+        // Проверяем, существует ли поле streakCount, если нет — инициализируем его
+        if (!userData.containsKey('streakCount')) {
+          await userDoc.reference.update({'streakCount': 0});
+          return 0; // Инициализация стрика
+        }
+
+        return userData['streakCount'] ?? 0;
       }
       return 0;
     } catch (e) {
-      logger.e('Ошибка при получении стрика: $e');
+      log('Ошибка при получении стрика: $e');
       return 0;
     }
   }
@@ -35,20 +66,16 @@ class StreakWidget extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height;
 
     // Вычисляем размеры элементов относительно экрана
-    double containerWidth = screenWidth * 0.3; // 30% ширины экрана
-    double containerHeight = screenHeight * 0.16; // 12% высоты экрана
-    double iconSize = screenWidth * 0.1; // 10% ширины экрана для иконки
-    double textSize = screenWidth * 0.05; // 5% ширины экрана для текста
-
-    // Получаем текущего пользователя
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final email = currentUser?.email;
+    double containerWidth = screenWidth * 0.3;
+    double containerHeight = screenHeight * 0.16;
+    double iconSize = screenWidth * 0.1;
+    double textSize = screenWidth * 0.05;
 
     return FutureBuilder<int>(
-      future: email != null ? _getStreakCount(email) : Future.value(0),
+      future: _getStreakCount(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         }
 
         if (snapshot.hasError) {
@@ -83,14 +110,13 @@ class StreakWidget extends StatelessWidget {
               const SizedBox(height: 10),
               // Иконка
               Icon(
-                Icons
-                    .local_fire_department_rounded, // Используем переданную иконку
+                Icons.local_fire_department_rounded,
                 size: iconSize,
-                color: iconColor, // Цвет иконки зависит от стрика
+                color: iconColor,
               ),
               const SizedBox(height: 10),
               Text(
-                '$streakCount', // Отображаем текущий стрик
+                '$streakCount',
                 style: TextStyle(
                   fontSize: textSize,
                   color: Colors.white,
@@ -98,7 +124,7 @@ class StreakWidget extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                text, // Используем переданный текст
+                text,
                 style: TextStyle(
                   fontSize: textSize * 0.6,
                   color: Colors.white,

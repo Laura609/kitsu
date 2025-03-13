@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test1/Pages/training_page.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
+import 'package:test1/Widgets/button_course_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_list_item_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_profile_widget.dart';
@@ -108,19 +110,20 @@ class HomePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: List.generate(
-                              (users.length / 2).ceil(),
-                              (index) {
-                                final user1 = users[index * 2];
-                                final user2 = index * 2 + 1 < users.length
-                                    ? users[index * 2 + 1]
-                                    : null;
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(
+                            (users.length / 2).ceil(),
+                            (index) {
+                              final user1 = users[index * 2];
+                              final user2 = index * 2 + 1 < users.length
+                                  ? users[index * 2 + 1]
+                                  : null;
 
-                                return Column(
+                              return SizedBox(
+                                height: 150,
+                                child: Column(
                                   children: [
                                     UserListItem(
                                       user: user1,
@@ -149,10 +152,75 @@ class HomePage extends StatelessWidget {
                                         },
                                       ),
                                   ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+
+                      // TEXT
+                      const SizedBox(height: 20),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: RichText(
+                            text: TextSpan(
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                const TextSpan(text: 'КУРСЫ ОТ '),
+                                TextSpan(
+                                  text: 'KITSU',
+                                  style: TextStyle(
+                                    color:
+                                        const Color.fromRGBO(254, 109, 142, 1),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // КУРСЫ
+                      const SizedBox(height: 10),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            AuctionCard(
+                              title: 'Дизайн',
+                              assetImage: 'assets/design.png',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TrainingPage(),
+                                  ),
                                 );
                               },
                             ),
-                          ),
+                            const SizedBox(width: 10),
+                            AuctionCard(
+                              title: 'Flutter',
+                              assetImage: 'assets/flutter1.png',
+                              onTap: () {},
+                            ),
+                            const SizedBox(width: 10),
+                            AuctionCard(
+                              title: 'Flet',
+                              assetImage: 'assets/flet1.png',
+                              onTap: () {},
+                            ),
+                          ],
                         ),
                       ),
                     ],

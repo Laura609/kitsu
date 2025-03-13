@@ -3,9 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:test1/Pages/ShowDialog/edit_info_dialog.dart';
+import 'package:test1/Pages/Dialogs/edit_info_dialog.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
+import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/profile_cards/skill_widget.dart';
 import 'package:test1/Widgets/profile_cards/streak_widget.dart';
 import 'package:test1/Widgets/profile_cards/work_widget.dart';
@@ -52,7 +53,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         builder: (context, snapshot) {
           // Проверяем состояние загрузки
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LoadingWidget());
           }
 
           if (snapshot.hasError) {
@@ -118,8 +119,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   Widget _buildLogo() {
     return const Center(
       child: Image(
-        image: AssetImage('assets/logo.png'),
-        height: 100,
+        image: AssetImage('assets/rrr.png'),
+        height: 150,
       ),
     );
   }
@@ -136,17 +137,20 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             Flexible(
               child: StreakWidget(
                 text: 'Дней стрика',
+                email: userData['email'], // Используем userData
               ),
             ),
             Flexible(
               child: SkillWidget(
                 text: 'Изучаю',
+                email: userData['email'], // Используем userData
               ),
             ),
             Flexible(
               child: MentorStudentCountWidget(
                 text: 'Обучаете',
                 icon: Icons.person,
+                email: userData['email'], // Используем userData
               ),
             ),
           ],

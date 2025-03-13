@@ -82,6 +82,8 @@ class _PasswordTextFieldWidgetState extends State<PasswordTextFieldWidget> {
                     color: const Color.fromRGBO(168, 168, 168, 1),
                   ),
                 ),
+                contentPadding: EdgeInsets.symmetric(
+                    vertical: 12.0), // Отступы, чтобы текст был по центру
               ),
             ),
           ),

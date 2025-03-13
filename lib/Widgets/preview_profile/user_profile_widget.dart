@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test1/Widgets/loading_widget.dart';
+import 'package:test1/Widgets/profile_cards/skill_widget.dart';
+import 'package:test1/Widgets/profile_cards/streak_widget.dart';
+import 'package:test1/Widgets/profile_cards/work_widget.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
-import 'package:logger/logger.dart'; // Add the logger import
+import 'package:logger/logger.dart';
 
 class UserProfileWidget extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -15,7 +19,7 @@ class UserProfileWidget extends StatefulWidget {
 
 class _UserProfileWidgetState extends State<UserProfileWidget> {
   late Future<bool> isFriendFuture;
-  final logger = Logger(); // Instantiate the logger
+  final logger = Logger();
 
   @override
   void initState() {
@@ -37,8 +41,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       final docSnapshot = await currentUserFriendsRef.get();
       return docSnapshot.exists;
     } catch (e) {
-      logger.e(
-          'Error checking if user is a friend: $e'); // Use logger instead of print
+      logger.e('Error checking if user is a friend: $e');
       return false;
     }
   }
@@ -70,7 +73,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         }, SetOptions(merge: true));
 
         if (mounted) {
-          // Ensure widget is still mounted before showing the snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Пользователь добавлен в друзья!')),
           );
@@ -80,7 +82,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
         await userFriendsRef.doc(currentUser.email).delete();
 
         if (mounted) {
-          // Ensure widget is still mounted before showing the snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Пользователь удален из друзей!')),
           );
@@ -106,7 +107,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
       appBar: AppBarWidget(
         text: widget.user['username'] ?? 'Профиль пользователя',
         isBack: true,
-        showSignOutButton: true,
+        showSignOutButton: false,
       ),
       body: Center(
         child: Padding(
@@ -115,7 +116,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
             future: isFriendFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
+                return const LoadingWidget();
               }
 
               if (snapshot.hasError) {
@@ -139,7 +140,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Имя: ${widget.user['username'] ?? 'Не указано'}',
+                    '${widget.user['username'] ?? 'Не указано'}',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -148,7 +149,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Био: ${widget.user['bio'] ?? 'Нет информации'}',
+                    '${widget.user['bio'] ?? 'Нет информации'}',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
@@ -156,7 +157,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Роль: ${widget.user['role'] ?? 'Не указана'}',
+                    '${widget.user['role'] ?? 'Не указана'}',
                     style: TextStyle(
                       color: const Color.fromRGBO(2, 217, 173, 1),
                       fontSize: 16,
@@ -164,6 +165,34 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                     ),
                   ),
                   const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: StreakWidget(
+                          text: 'Дней стрика',
+                          email: widget.user[
+                              'email'], // Передаем email выбранного пользователя
+                        ),
+                      ),
+                      Flexible(
+                        child: SkillWidget(
+                          text: 'Изучаю',
+                          email: widget.user[
+                              'email'], // Передаем email выбранного пользователя
+                        ),
+                      ),
+                      Flexible(
+                        child: MentorStudentCountWidget(
+                          text: 'Обучаете',
+                          icon: Icons.person,
+                          email: widget.user[
+                              'email'], // Передаем email выбранного пользователя
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () => _updateFriendStatus(!isFriend),
                     style: ElevatedButton.styleFrom(
@@ -175,7 +204,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                     ),
                     child: Text(
                       isFriend ? 'Удалить из друзей' : 'Добавить в друзья',
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(
+                          fontSize: 16, color: Color.fromRGBO(36, 36, 36, 1)),
                     ),
                   ),
                 ],

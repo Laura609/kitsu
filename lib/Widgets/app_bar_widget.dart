@@ -6,18 +6,23 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   final bool isBack;
   final String text;
   final bool showSignOutButton; // Новый параметр для кнопки выхода
+  final Color backgroundColor; // Параметр для выбора цвета фона
+  final Color textColor; // Параметр для выбора цвета текста
 
   const AppBarWidget({
     super.key,
     required this.text,
     required this.isBack,
     this.showSignOutButton = false, // По умолчанию кнопка не показывается
+    this.backgroundColor =
+        const Color.fromARGB(255, 27, 27, 27), // Цвет фона по умолчанию
+    this.textColor = Colors.white, // Цвет текста по умолчанию (белый)
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color.fromARGB(255, 27, 27, 27), // Цвет фона
+      backgroundColor: backgroundColor, // Используем переданный цвет фона
       leading: isBack
           ? IconButton(
               icon: const Icon(
@@ -32,8 +37,8 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
           : null, // Нет кнопки назад, если isBack = false
       title: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white, // Белый цвет текста
+        style: TextStyle(
+          color: textColor, // Используем переданный цвет текста
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),

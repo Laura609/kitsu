@@ -16,7 +16,7 @@ class UserListItem extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color.fromRGBO(53, 51, 51, 1), // Фон
+          color: Color.fromRGBO(53, 51, 51, 1), // Фон
           borderRadius: BorderRadius.circular(30), // Закругление углов
         ),
         child: Row(

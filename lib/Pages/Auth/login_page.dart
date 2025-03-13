@@ -105,7 +105,12 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: <Widget>[
                   const SizedBox(height: 50),
-                  const Image(image: AssetImage('assets/logo.png')),
+                  const Image(
+                    image: AssetImage('assets/rrr.png'),
+                    width: 150,
+                    height: null,
+                    fit: BoxFit.contain,
+                  ),
                   const SizedBox(height: 30),
                   const TextWidget(
                     textTitle: 'Добро пожаловать назад!\nМы скучали',
@@ -118,12 +123,13 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _emailController,
                     isTouched: _isEmailTouched,
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   PasswordTextFieldWidget(
                     hintText: 'Пароль',
                     controller: _passwordController,
                     isTouched: _isPasswordTouched,
                   ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25),
                     child: Row(

@@ -1,0 +1,2 @@
+C:/Users/Admin/Downloads/kitsu/android/app/.cxx/Debug/m70283f1/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Admin/Downloads/kitsu/android/app/.cxx/Debug/m70283f1/armeabi-v7a/CMakeFiles/rebuild_cache.dir
