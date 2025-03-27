@@ -161,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const TextWidget(
                     textTitle: 'Добро пожаловать!',
                     textTitleColor: Colors.white,
-                    textTitleSize: 14,
+                    textTitleSize: 18,
                   ),
                   const SizedBox(height: 20),
                   RoleSelectionWidget(

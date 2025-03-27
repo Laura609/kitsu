@@ -35,8 +35,8 @@ class MyApp extends StatelessWidget {
         StudentSkillSelectionPage.routeName: (context) =>
             const StudentSkillSelectionPage(),
         StudentProfilePage.routeName: (context) => const StudentProfilePage(),
-        MentorOrStudentPofilePage.routeName: (context) =>
-            MentorOrStudentPofilePage(),
+        MentorOrStudentProfilePage.routeName: (context) =>
+            MentorOrStudentProfilePage(),
       },
     );
   }

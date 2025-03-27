@@ -64,7 +64,7 @@ class _StudentSkillSelectionPageState extends State<StudentSkillSelectionPage> {
       // Переход на страницу профиля
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MentorOrStudentPofilePage()),
+        MaterialPageRoute(builder: (context) => MentorOrStudentProfilePage()),
       );
     } catch (e) {
       logger.e('Ошибка при сохранении навыка в Firestore: $e');

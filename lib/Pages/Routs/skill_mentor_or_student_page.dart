@@ -52,7 +52,7 @@ class SkillMentorOrStudentPage extends StatelessWidget {
               return MentorSkillSelectionPage();
             } else {
               // Если навык выбран, отправляем на профиль
-              return MentorOrStudentPofilePage();
+              return MentorOrStudentProfilePage();
             }
           } else if (role == 'ученик') {
             if (selectedSkill == null || selectedSkill.isEmpty) {
@@ -60,7 +60,7 @@ class SkillMentorOrStudentPage extends StatelessWidget {
               return StudentSkillSelectionPage();
             } else {
               // Если навык выбран, отправляем на профиль
-              return MentorOrStudentPofilePage();
+              return MentorOrStudentProfilePage();
             }
           } else {
             logger.e("Неверная роль пользователя: $role");

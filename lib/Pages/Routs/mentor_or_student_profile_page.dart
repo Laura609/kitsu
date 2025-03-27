@@ -6,9 +6,9 @@ import 'package:test1/Pages/Profiels/student_profile_page.dart';
 import 'package:logger/logger.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 
-class MentorOrStudentPofilePage extends StatelessWidget {
+class MentorOrStudentProfilePage extends StatelessWidget {
   static const routeName = '/profile';
-  MentorOrStudentPofilePage({super.key});
+  MentorOrStudentProfilePage({super.key});
 
   final logger = Logger(); // Создание экземпляра логера
 

@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test1/Pages/Dialogs/premium_dialog.dart';
 import 'package:test1/Pages/training_page.dart';
-import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
 import 'package:test1/Widgets/button_course_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
+import 'package:test1/Widgets/motivation_kitsu_widget.dart';
+import 'package:test1/Widgets/premium_offer_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_list_item_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_profile_widget.dart';
 
@@ -48,12 +50,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarWidget(
-        text: 'Главная страница',
-        isBack: false,
-      ),
-      body: Container(
-        color: const Color.fromRGBO(36, 36, 36, 1), // Цвет фона
+      backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
+      body: SingleChildScrollView(
         child: FutureBuilder<Map<String, String>>(
           future: _getUserData(), // Получаем навык и роль пользователя
           builder: (context, snapshot) {
@@ -92,7 +90,7 @@ class HomePage extends StatelessWidget {
                 }
 
                 return Padding(
-                  padding: const EdgeInsets.only(top: 30),
+                  padding: const EdgeInsets.only(top: 70),
                   child: Column(
                     children: [
                       Align(
@@ -158,7 +156,8 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                       ),
-
+                      const SizedBox(height: 10),
+                      MotivationKitsuWidget(onTap: () {}),
                       // TEXT
                       const SizedBox(height: 20),
                       Align(
@@ -223,6 +222,26 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                       ),
+                      PremiumOfferWidget(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => PremiumDialog(
+                              onClose: () => Navigator.pop(context),
+                              onPurchase: () {
+                                // Логика покупки
+                                Navigator.pop(context);
+                                // Дополнительные действия после покупки
+                              },
+                            ),
+                            barrierDismissible: true,
+                          );
+                        },
+                        description:
+                            'Получите доступ ко всему\nконтенту на 30 дней',
+                        priceText: 'ПОЛУЧИТЬ СЕЙЧАС ЗА 299Р',
+                        imageAsset: 'assets/red_fox.png',
+                      )
                     ],
                   ),
                 );
@@ -231,7 +250,7 @@ class HomePage extends StatelessWidget {
           },
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(),
+      bottomNavigationBar: BottomNavBar(),
     );
   }
 }

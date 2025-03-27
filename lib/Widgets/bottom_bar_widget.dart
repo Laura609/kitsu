@@ -19,7 +19,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     HomePage.routeName, // Главная страница
     FriendsPage.routeName, // Страница друзей
     ChatsPage.routeName,
-    MentorOrStudentPofilePage.routeName, // Страница профиля
+    MentorOrStudentProfilePage.routeName, // Страница профиля
   ];
 
   @override
@@ -75,7 +75,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       _selectedIndex = 1; // Главная
     } else if (routeName == ChatsPage.routeName) {
       _selectedIndex = 2; // Друзья
-    } else if (routeName == MentorOrStudentPofilePage.routeName) {
+    } else if (routeName == MentorOrStudentProfilePage.routeName) {
       _selectedIndex = 2; // Друзья
     }
   }

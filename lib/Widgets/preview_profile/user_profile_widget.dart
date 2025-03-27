@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test1/Pages/friends_page.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/profile_cards/skill_widget.dart';
 import 'package:test1/Widgets/profile_cards/streak_widget.dart';
-import 'package:test1/Widgets/profile_cards/work_widget.dart';
+import 'package:test1/Widgets/profile_cards/friends_widget.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:logger/logger.dart';
 
@@ -183,11 +184,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                         ),
                       ),
                       Flexible(
-                        child: MentorStudentCountWidget(
-                          text: 'Обучаете',
-                          icon: Icons.person,
-                          email: widget.user[
-                              'email'], // Передаем email выбранного пользователя
+                        child: MentorStudentFriendsWidget(
+                          text: 'Друзья',
+                          icon: Icons.people,
+                          email: FirebaseAuth.instance.currentUser!.email!,
+                          onTap: () {
+                            // Ваш кастомный обработчик
+                            Navigator.pushNamed(context, FriendsPage.routeName);
+                          },
                         ),
                       ),
                     ],

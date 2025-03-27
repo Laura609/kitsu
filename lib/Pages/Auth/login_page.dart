@@ -111,13 +111,13 @@ class _LoginPageState extends State<LoginPage> {
                     height: null,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
                   const TextWidget(
                     textTitle: 'Добро пожаловать назад!\nМы скучали',
                     textTitleColor: Colors.white,
-                    textTitleSize: 14,
+                    textTitleSize: 18,
                   ),
-                  const SizedBox(height: 90),
+                  const SizedBox(height: 60),
                   EmailTextFieldWidget(
                     hintText: 'Email',
                     controller: _emailController,

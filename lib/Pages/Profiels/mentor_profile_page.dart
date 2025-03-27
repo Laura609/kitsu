@@ -4,12 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:test1/Pages/Dialogs/edit_info_dialog.dart';
+import 'package:test1/Pages/friends_page.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/profile_cards/skill_widget.dart';
 import 'package:test1/Widgets/profile_cards/streak_widget.dart';
-import 'package:test1/Widgets/profile_cards/work_widget.dart';
+import 'package:test1/Widgets/profile_cards/friends_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 
 class MentorProfilePage extends StatefulWidget {
@@ -111,7 +112,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
           color: Color.fromRGBO(43, 43, 43, 1),
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(),
+      bottomNavigationBar: BottomNavBar(),
     );
   }
 
@@ -146,10 +147,14 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
               ),
             ),
             Flexible(
-              child: MentorStudentCountWidget(
-                text: 'Обучаете',
-                icon: Icons.person,
-                email: userData['email'], // Используем userData
+              child: MentorStudentFriendsWidget(
+                text: 'Друзья',
+                icon: Icons.people,
+                email: FirebaseAuth.instance.currentUser!.email!,
+                onTap: () {
+                  // Ваш кастомный обработчик
+                  Navigator.pushNamed(context, FriendsPage.routeName);
+                },
               ),
             ),
           ],

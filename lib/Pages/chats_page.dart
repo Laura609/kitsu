@@ -193,7 +193,7 @@ class ChatsPage extends StatelessWidget {
           color: Color.fromRGBO(43, 43, 43, 1),
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(),
+      bottomNavigationBar: BottomNavBar(),
     );
   }
 }
