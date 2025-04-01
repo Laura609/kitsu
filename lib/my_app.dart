@@ -19,15 +19,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const MainPage(),
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       routes: {
         HomePage.routeName: (context) => const HomePage(),
+        FriendsPage.routeName: (context) => const FriendsPage(),
+        ChatsPage.routeName: (context) => ChatsPage(),
+        MentorOrStudentProfilePage.routeName: (context) =>
+            const MentorOrStudentProfilePage(),
         TrainingPage.routeName: (context) => const TrainingPage(),
         MentorProfilePage.routeName: (context) => const MentorProfilePage(),
-        ChatsPage.routeName: (context) => const ChatsPage(),
-        FriendsPage.routeName: (context) => FriendsPage(),
         MentorLevelSelectionPage.routeName: (context) =>
             const MentorLevelSelectionPage(),
         MentorSkillSelectionPage.routeName: (context) =>
@@ -35,8 +34,6 @@ class MyApp extends StatelessWidget {
         StudentSkillSelectionPage.routeName: (context) =>
             const StudentSkillSelectionPage(),
         StudentProfilePage.routeName: (context) => const StudentProfilePage(),
-        MentorOrStudentProfilePage.routeName: (context) =>
-            MentorOrStudentProfilePage(),
       },
     );
   }

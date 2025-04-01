@@ -8,91 +8,85 @@ class ChatService {
     required String receiverId,
     required String message,
   }) async {
-    // Обновляем метаданные для обоих пользователей
-    await _updateUserChatMetadata(
-        senderId, receiverId, message, true); // true - это sender
-    await _updateUserChatMetadata(
-        receiverId, senderId, message, false); // false - это не sender
+    // Сохраняем сообщение для отправителя
+    await _saveMessage(
+      senderId: senderId,
+      receiverId: receiverId,
+      message: message,
+      isSent: true,
+    );
 
-    // Сохраняем сообщение в подколлекции messages для sender
+    // Сохраняем сообщение для получателя
+    await _saveMessage(
+      senderId: senderId,
+      receiverId: receiverId,
+      message: message,
+      isSent: false,
+    );
+
+    // Обновляем метаданные чатов
+    await _updateChatMetadata(senderId, receiverId, message, true);
+    await _updateChatMetadata(receiverId, senderId, message, false);
+  }
+
+  Future<void> _saveMessage({
+    required String senderId,
+    required String receiverId,
+    required String message,
+    required bool isSent,
+  }) async {
+    // Сохраняем сообщение в подколлекции messages
     await _firestore
         .collection('Users')
-        .doc(senderId)
-        .collection('friends')
-        .doc(receiverId)
+        .doc(isSent ? senderId : receiverId)
         .collection('messages')
+        .doc(isSent ? receiverId : senderId)
+        .collection('conversation')
         .add({
       'sender_id': senderId,
       'receiver_id': receiverId,
       'message': message,
       'timestamp': FieldValue.serverTimestamp(),
-    });
-
-    // Сохраняем сообщение в подколлекции messages для receiver
-    await _firestore
-        .collection('Users')
-        .doc(receiverId)
-        .collection('friends')
-        .doc(senderId)
-        .collection('messages')
-        .add({
-      'sender_id': senderId,
-      'receiver_id': receiverId,
-      'message': message,
-      'timestamp': FieldValue.serverTimestamp(),
+      'is_sent': isSent,
     });
   }
 
-  Future<void> _updateUserChatMetadata(
+  Future<void> _updateChatMetadata(
     String userId,
     String otherUserId,
     String message,
     bool isSender,
   ) async {
-    // Форматируем последнее сообщение для отображения
-    final String lastMessageDisplay = isSender ? 'вы: $message' : message;
-
-    // Проверяем существование документа друга
-    final friendDoc = await _firestore
+    final chatDocRef = _firestore
         .collection('Users')
         .doc(userId)
-        .collection('friends')
-        .doc(otherUserId)
-        .get();
+        .collection('chats')
+        .doc(otherUserId);
 
-    if (!friendDoc.exists) {
-      // Создаем документ друга, если его нет
-      await friendDoc.reference.set({
-        'added_at': FieldValue.serverTimestamp(),
-      });
-    }
-
-    // Обновляем метаданные
-    await friendDoc.reference.set({
-      'last_message':
-          lastMessageDisplay, // Сохраняем отформатированное сообщение
+    await chatDocRef.set({
+      'last_message': isSender ? 'вы: $message' : message,
       'last_message_time': FieldValue.serverTimestamp(),
       'last_message_with': otherUserId,
     }, SetOptions(merge: true));
   }
 
-  Stream<QuerySnapshot> getMessages(String user1, String user2) {
+  Stream<QuerySnapshot> getMessages(
+      String currentUserEmail, String otherUserEmail) {
     return _firestore
         .collection('Users')
-        .doc(user1)
-        .collection('friends')
-        .doc(user2)
+        .doc(currentUserEmail)
         .collection('messages')
+        .doc(otherUserEmail)
+        .collection('conversation')
         .orderBy('timestamp', descending: false)
         .snapshots();
   }
 
-  // Метод для получения списка друзей с последними сообщениями
-  Stream<QuerySnapshot> getFriendsWithLastMessages(String userId) {
+  Stream<QuerySnapshot> getChats(String userId) {
     return _firestore
         .collection('Users')
         .doc(userId)
-        .collection('friends')
+        .collection('chats')
         .orderBy('last_message_time', descending: true)
         .snapshots();
   }

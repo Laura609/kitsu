@@ -102,7 +102,7 @@ class _MentorSkillSelectionPageState extends State<MentorSkillSelectionPage> {
                   },
                 ),
               );
-            }).toList(),
+            }), // Removed .toList() here
             const SizedBox(height: 110),
             // Кнопка для сохранения выбранного направления
             Padding(

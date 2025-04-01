@@ -6,12 +6,13 @@ import 'package:logger/logger.dart';
 import 'package:test1/Pages/Dialogs/edit_info_dialog.dart';
 import 'package:test1/Pages/friends_page.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
+import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
-import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/profile_cards/skill_widget.dart';
 import 'package:test1/Widgets/profile_cards/streak_widget.dart';
 import 'package:test1/Widgets/profile_cards/friends_widget.dart';
 import 'package:test1/Widgets/progress_widget.dart';
+import 'package:test1/Widgets/shimer_profile_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 
 class StudentProfilePage extends StatefulWidget {
@@ -52,9 +53,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             .doc(currentUser.email)
             .snapshots(),
         builder: (context, snapshot) {
-          // Проверяем состояние загрузки
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: LoadingWidget());
+            return const ProfileShimmer();
           }
 
           if (snapshot.hasError) {
@@ -78,7 +78,6 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             return const Center(child: Text('Данные пользователя не найдены.'));
           }
 
-          // Выводим полученные данные для отладки
           logger.i('Полученные данные пользователя: $userData');
 
           return Padding(
@@ -96,10 +95,9 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (userData != null) {
-            // Вызываем диалоговое окно
-            showDialog(
-              context: context,
-              builder: (context) => EditUserInfoDialog(
+            AppNavigator.fadeDialog(
+              context,
+              EditUserInfoDialog(
                 usernameController: usernameController,
                 bioController: bioController,
                 userEmail: currentUser.email!,
@@ -113,7 +111,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           color: Color.fromRGBO(43, 43, 43, 1),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      bottomNavigationBar: const BottomNavBar(),
     );
   }
 
@@ -138,31 +136,29 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             Flexible(
               child: StreakWidget(
                 text: 'Дней стрика',
-                email: userData['email'], // Используем userData
+                email: userData['email'],
               ),
             ),
             Flexible(
               child: SkillWidget(
                 text: 'Изучаю',
-                email: userData['email'], // Используем userData
+                email: userData['email'],
               ),
             ),
             Flexible(
               child: MentorStudentFriendsWidget(
                 text: 'Друзья',
                 icon: Icons.people,
-                email: FirebaseAuth.instance.currentUser!.email!,
-                onTap: () {
-                  // Ваш кастомный обработчик
-                  Navigator.pushNamed(context, FriendsPage.routeName);
-                },
+                email: currentUser.email!,
+                onTap: () =>
+                    Navigator.pushNamed(context, FriendsPage.routeName),
               ),
             ),
           ],
         ),
         ProgressWidget(
-          courseName: 'Курс по дизайну', // Название курса
-          icon: Icons.school, // Иконка для курса
+          courseName: 'Курс по дизайну',
+          icon: Icons.school,
         ),
       ],
     );
@@ -181,8 +177,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   Widget _buildTextWidget(String? text, double size, bool isUsername) {
     if (text == null || text.isEmpty) {
       text = isUsername
-          ? currentUser.email ??
-              'User${Random().nextInt(1000)}' // Используем email, если имя не задано
+          ? currentUser.email ?? 'User${Random().nextInt(1000)}'
           : 'Заполните информацию о себе';
     }
     return Center(

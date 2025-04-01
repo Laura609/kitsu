@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class PremiumDialog extends StatelessWidget {
@@ -14,38 +13,47 @@ class PremiumDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final dialogWidth = screenWidth * 0.8;
+    final dialogHeight = screenHeight * 0.8;
+    final fontSizeMultiplier = screenWidth / 1080;
+    const minFontSize = 16.0;
+
     return Dialog(
-      insetPadding: EdgeInsets.zero,
+      insetPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
       backgroundColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Stack(
+        alignment: Alignment.center,
         children: [
           // Фоновое размытие
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.01),
+                color: const Color.fromRGBO(0, 0, 0, 0.01),
               ),
             ),
           ),
-          // Основной контент с эффектом матового стекла
+          // Основной контент
           Container(
-            width: double.infinity,
-            height: double.infinity,
-            margin: EdgeInsets.all(20),
+            width: dialogWidth,
+            height: dialogHeight,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: const Color.fromRGBO(255, 255, 255, 0.2),
                 width: 1,
               ),
-              // Эффект матового стекла
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color.fromARGB(255, 124, 124, 124).withOpacity(0.15),
-                  const Color.fromARGB(255, 77, 76, 76).withOpacity(0.5),
+                  const Color.fromARGB(255, 124, 124, 124).withAlpha(38),
+                  const Color.fromARGB(255, 77, 76, 76).withAlpha(128),
                 ],
               ),
             ),
@@ -53,91 +61,117 @@ class PremiumDialog extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 70),
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            height: 1.3,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: 'Пользователи ',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            TextSpan(
-                              text: 'ЛИСЫ - PRO\n',
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(screenWidth * 0.06),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: screenHeight * 0.03),
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
                               style: TextStyle(
-                                  color: Color.fromRGBO(254, 109, 142, 1)),
-                            ),
-                            TextSpan(
-                              text: 'быстрее достигают своих целей',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 40),
-                      _buildFeatureRow('Весь контент',
-                          'Получи доступ ко всем курсам, навыкам в приложении'),
-                      SizedBox(height: 15),
-                      _buildFeatureRow('Сертификаты',
-                          'Заверши весь уровень навыка и получи сертификат'),
-                      SizedBox(height: 15),
-                      _buildFeatureRow('Никакой рекламы',
-                          'Убери всю рекламу между обучением, чтобы не отвлекаться'),
-                      SizedBox(height: 15),
-                      _buildFeatureRow('Восстановление стрика',
-                          'Не теряй стрик, если пропустишь день обучения'),
-                      Spacer(),
-                      Center(
-                        child: GestureDetector(
-                          onTap: onPurchase,
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color.fromRGBO(254, 109, 142, 1),
-                                width: 1.0,
+                                fontSize: _scaleFontSize(
+                                    24, fontSizeMultiplier, minFontSize),
+                                fontWeight: FontWeight.bold,
+                                height: 1.3,
                               ),
+                              children: [
+                                const TextSpan(
+                                  text: 'Пользователи ',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                TextSpan(
+                                  text: 'ЛИСЫ - PRO\n',
+                                  style: TextStyle(
+                                      color: const Color.fromRGBO(
+                                          254, 109, 142, 1)),
+                                ),
+                                const TextSpan(
+                                  text: 'быстрее достигают своих целей',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
                             ),
-                            child: Center(
-                              child: Text(
-                                'ПОЛУЧИТЬ СЕЙЧАС ЗА 299 ₽',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromRGBO(254, 109, 142, 1),
+                          ),
+                          SizedBox(height: screenHeight * 0.05),
+                          _buildFeatureRow(fontSizeMultiplier, 'Весь контент',
+                              'Получи доступ ко всем курсам, навыкам в приложении'),
+                          SizedBox(height: screenHeight * 0.02),
+                          _buildFeatureRow(fontSizeMultiplier, 'Сертификаты',
+                              'Заверши весь уровень навыка и получи сертификат'),
+                          SizedBox(height: screenHeight * 0.02),
+                          _buildFeatureRow(
+                              fontSizeMultiplier,
+                              'Никакой рекламы',
+                              'Убери всю рекламу между обучением, чтобы не отвлекаться'),
+                          SizedBox(height: screenHeight * 0.02),
+                          _buildFeatureRow(
+                              fontSizeMultiplier,
+                              'Восстановление стрика',
+                              'Не теряй стрик, если пропустишь день обучения'),
+                          Spacer(),
+                          Center(
+                            child: GestureDetector(
+                              onTap: onPurchase,
+                              child: Container(
+                                width: dialogWidth * 0.7,
+                                padding: EdgeInsets.symmetric(
+                                    vertical: screenHeight * 0.015),
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color:
+                                        const Color.fromRGBO(254, 109, 142, 1),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'ПОЛУЧИТЬ СЕЙЧАС ЗА 299 ₽',
+                                    style: TextStyle(
+                                      fontSize: _scaleFontSize(
+                                          14, fontSizeMultiplier, 12),
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color.fromRGBO(
+                                          254, 109, 142, 1),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
+                          SizedBox(height: screenHeight * 0.03),
+                        ],
+                      ),
+                    ),
+                    // Кнопка закрытия
+                    Positioned(
+                      top: screenWidth * 0.03,
+                      right: screenWidth * 0.03,
+                      child: GestureDetector(
+                        onTap: onClose,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color.fromRGBO(0, 0, 0, 0.3),
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: _scaleFontSize(
+                                24, fontSizeMultiplier, minFontSize),
+                          ),
                         ),
                       ),
-                      SizedBox(height: 20),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-          // Кнопка закрытия поверх всего
-          Positioned(
-            top: 40,
-            right: 40,
-            child: IconButton(
-              icon: Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: onClose,
             ),
           ),
         ],
@@ -145,53 +179,55 @@ class PremiumDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureRow(String title, String description) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: EdgeInsets.only(right: 16),
-            height: 60,
-            child: Icon(
-              Icons.lock_open_rounded,
-              color: Color.fromRGBO(254, 109, 142, 1),
-              size: 40,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withOpacity(0.4),
-                  blurRadius: 8,
-                  offset: Offset(2, 4),
-                ),
-              ],
-            ),
+  double _scaleFontSize(double baseSize, double multiplier, double minSize) {
+    return (baseSize * multiplier).clamp(minSize, double.infinity);
+  }
+
+  Widget _buildFeatureRow(
+      double fontSizeMultiplier, String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(right: 16),
+          height: _scaleFontSize(60, fontSizeMultiplier, 40),
+          child: Icon(
+            Icons.lock_open_rounded,
+            color: const Color.fromRGBO(254, 109, 142, 1),
+            size: _scaleFontSize(40, fontSizeMultiplier, 24),
+            shadows: const [
+              Shadow(
+                color: Color.fromRGBO(0, 0, 0, 0.4),
+                blurRadius: 8,
+                offset: Offset(2, 4),
+              ),
+            ],
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: _scaleFontSize(18, fontSizeMultiplier, 14),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                SizedBox(height: 5),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
+              ),
+              SizedBox(height: _scaleFontSize(5, fontSizeMultiplier, 4)),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: _scaleFontSize(16, fontSizeMultiplier, 12),
+                  color: const Color.fromRGBO(255, 255, 255, 0.9),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

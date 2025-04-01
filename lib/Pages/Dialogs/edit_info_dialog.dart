@@ -31,6 +31,7 @@ class EditUserInfoDialog extends StatelessWidget {
             controller: usernameController,
             autofocus: true,
             cursorColor: accentColor,
+            maxLength: 30, // Максимальное количество символов для имени
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'Введите новое имя',
@@ -43,12 +44,15 @@ class EditUserInfoDialog extends StatelessWidget {
                 borderSide: const BorderSide(color: Colors.grey, width: 1),
                 borderRadius: BorderRadius.circular(8),
               ),
+              counterText: '', // Скрываем счетчик символов
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: bioController,
             cursorColor: accentColor,
+            maxLength: 150, // Максимальное количество символов для био
+            maxLines: 3, // Разрешаем многострочный ввод
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'Введите новое био',

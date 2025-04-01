@@ -14,7 +14,7 @@ class IntroPage2 extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             SizedBox(height: 150), // Отступ сверху
-            Image(image: AssetImage('assets/logo.png')),
+            Image(image: AssetImage('assets/splash2.png')),
             SizedBox(height: 30), // Отступ между изображением и текстом
             TextWidget(
               textTitle: 'Страница 2',

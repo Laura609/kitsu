@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:test1/Pages/Dialogs/edit_info_dialog.dart';
 import 'package:test1/Pages/friends_page.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
+import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/profile_cards/skill_widget.dart';
@@ -95,10 +96,10 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (userData != null) {
-            // Вызываем диалоговое окно
-            showDialog(
-              context: context,
-              builder: (context) => EditUserInfoDialog(
+            // Открываем диалоговое окно с помощью AppNavigator
+            AppNavigator.fadeDialog(
+              context,
+              EditUserInfoDialog(
                 usernameController: usernameController,
                 bioController: bioController,
                 userEmail: currentUser.email!,
@@ -112,7 +113,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
           color: Color.fromRGBO(43, 43, 43, 1),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      bottomNavigationBar: const BottomNavBar(),
     );
   }
 

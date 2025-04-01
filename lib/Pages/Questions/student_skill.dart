@@ -61,13 +61,20 @@ class _StudentSkillSelectionPageState extends State<StudentSkillSelectionPage> {
 
       logger.i('Навык сохранен в Firestore: $skillAbbreviation');
 
-      // Переход на страницу профиля
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MentorOrStudentProfilePage()),
-      );
+      // Переход на страницу профиля с проверкой mounted
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MentorOrStudentProfilePage()),
+        );
+      }
     } catch (e) {
       logger.e('Ошибка при сохранении навыка в Firestore: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: $e')),
+        );
+      }
     }
   }
 
@@ -99,36 +106,32 @@ class _StudentSkillSelectionPageState extends State<StudentSkillSelectionPage> {
                   },
                 ),
               );
-            }).toList(),
+            }), // Removed unnecessary .toList()
             const SizedBox(height: 110),
             // Кнопка для сохранения выбранного направления
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: SizedBox(
-                width: double.infinity, // Ширина на всю доступную область
-                height: 50, // Высота, как у кнопки SkillButton
+                width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: selectedSkill != null
                       ? () async {
                           await _saveSelectedSkill();
                         }
-                      : null, // Блокировка кнопки, если ничего не выбрано
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: selectedSkill != null
-                        ? const Color.fromRGBO(
-                            2, 217, 173, 1) // Зеленая кнопка при выборе
-                        : const Color.fromRGBO(103, 103, 103,
-                            1), // Серая кнопка при отсутствии выбора
+                        ? const Color.fromRGBO(2, 217, 173, 1)
+                        : const Color.fromRGBO(103, 103, 103, 1),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 40, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: BorderSide(
                         color: selectedSkill != null
-                            ? const Color.fromRGBO(
-                                2, 217, 173, 1) // Зеленый контур при выборе
-                            : const Color.fromRGBO(103, 103, 103,
-                                1), // Серый контур при отсутствии выбора
+                            ? const Color.fromRGBO(2, 217, 173, 1)
+                            : const Color.fromRGBO(103, 103, 103, 1),
                         width: 2,
                       ),
                     ),

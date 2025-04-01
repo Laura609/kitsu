@@ -2,8 +2,9 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+import 'package:test1/Pages/Dialogs/add_friends_dialog.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
+import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/friend_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_profile_widget.dart';
@@ -11,8 +12,7 @@ import 'package:test1/Widgets/bottom_bar_widget.dart';
 
 class FriendsPage extends StatelessWidget {
   static const routeName = '/friends';
-  final logger = Logger();
-  FriendsPage({super.key});
+  const FriendsPage({super.key});
 
   // Получаем список друзей текущего пользователя
   Stream<List<Map<String, dynamic>>> _fetchFriends() {
@@ -63,13 +63,27 @@ class FriendsPage extends StatelessWidget {
 
           final friends = snapshot.data ?? [];
           if (friends.isEmpty) {
-            return const Center(
-              child: Text(
-                'Нет друзей',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Image(
+                    image: AssetImage('assets/friends.png'),
+                    height: 150,
+                    width: 150,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Здесь пока что пусто...',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
             );
           }
@@ -85,17 +99,28 @@ class FriendsPage extends StatelessWidget {
                   await _removeFriend(friend['email']);
                 },
                 onTap: () {
-                  Navigator.push(
+                  AppNavigator.fadePush(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => UserProfileWidget(user: friend),
-                    ),
+                    UserProfileWidget(user: friend),
                   );
                 },
               );
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color.fromRGBO(2, 217, 173, 1),
+        onPressed: () {
+          AppNavigator.fadeDialog(
+            context,
+            AddFriendDialog(),
+          );
+        },
+        child: const Icon(
+          Icons.person_add,
+          color: Color.fromRGBO(43, 43, 43, 1),
+        ),
       ),
       bottomNavigationBar: BottomNavBar(),
     );

@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test1/Widgets/course_shimer_widget.dart';
 import 'package:test1/Widgets/courses/lesson_title_widget.dart';
-import 'package:test1/Widgets/loading_widget.dart';
 
 class GroupTile extends StatefulWidget {
   final String groupTitle;
@@ -197,7 +197,7 @@ class GroupTileState extends State<GroupTile> {
       future: _getLessonsWithLockStatus(widget.groupId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const LoadingWidget();
+          return const CourseShimmer();
         }
         if (snapshot.hasError || !snapshot.hasData) {
           return const Text('Ошибка загрузки данных уроков',

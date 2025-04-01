@@ -20,12 +20,24 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
   bool onLastPage = false;
   int _currentPage = 0;
   bool _isForward = true;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    // Timer logic for automatic page transitions
-    Timer.periodic(const Duration(seconds: 3), (timer) {
+
+    // Wait for the first frame to be rendered before starting the timer
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoPageTransition();
+    });
+  }
+
+  void _startAutoPageTransition() {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!_pageController.hasClients) {
+        return; // Check if controller is attached
+      }
+
       if (_isForward) {
         if (_currentPage < 2) {
           _pageController.nextPage(
@@ -58,6 +70,13 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override

@@ -15,7 +15,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
     required this.isBack,
     this.showSignOutButton = false, // По умолчанию кнопка не показывается
     this.backgroundColor =
-        const Color.fromARGB(255, 27, 27, 27), // Цвет фона по умолчанию
+        const Color.fromRGBO(43, 43, 43, 1), // Цвет фона по умолчанию
     this.textColor = Colors.white, // Цвет текста по умолчанию (белый)
   });
 

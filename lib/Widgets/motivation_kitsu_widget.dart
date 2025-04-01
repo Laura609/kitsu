@@ -7,13 +7,20 @@ class MotivationKitsuWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallScreen = screenWidth < 400;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 70,
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        height: screenHeight * 0.09, // 8% высоты экрана
+        margin: EdgeInsets.symmetric(
+          vertical: screenHeight * 0.01,
+          horizontal: screenWidth * 0.04,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
         decoration: BoxDecoration(
           color: const Color.fromRGBO(53, 51, 51, 1),
           borderRadius: BorderRadius.circular(30),
@@ -21,40 +28,40 @@ class MotivationKitsuWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Два текста рядом
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  height: 1.3, // Межстрочный интервал
-                ),
-                children: [
-                  const TextSpan(
-                    text: 'НЕ ПОТЕРЯЙТЕ СВОЮ МОТИВАЦИЮ!\n',
-                    style: TextStyle(color: Colors.white),
+            // Текстовая часть
+            Flexible(
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 11 : 13,
+                    fontWeight: FontWeight.bold,
+                    height: 1.7,
                   ),
-                  const TextSpan(
-                    text: 'ТЕБЕ ПОМОЖЕТ НАШ ',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  TextSpan(
-                    text: 'KITSU',
-                    style: TextStyle(
-                      color: Color.fromRGBO(254, 109, 142, 1),
-                      // Можно добавить дополнительные стили для выделенного текста
-                      // decoration: TextDecoration.underline,
+                  children: [
+                    const TextSpan(
+                      text: 'НЕ ПОТЕРЯЙ СВОЮ МОТИВАЦИЮ!\n',
+                      style: TextStyle(color: Colors.white),
                     ),
-                  ),
-                ],
+                    const TextSpan(
+                      text: 'ТЕБЕ ПОМОЖЕТ НАШ ',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextSpan(
+                      text: 'KITSU',
+                      style: TextStyle(
+                        color: const Color.fromRGBO(254, 109, 142, 1),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 0),
+
             // Иконка справа
-            Image(
-              image: AssetImage('assets/rrr.png'),
-              width: 55,
-              height: 55,
+            Image.asset(
+              'assets/rrr.png',
+              width: screenWidth * 0.15,
+              height: screenWidth * 0.15,
               fit: BoxFit.contain,
             )
           ],

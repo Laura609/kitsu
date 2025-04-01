@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test1/Pages/friends_page.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/profile_cards/skill_widget.dart';
 import 'package:test1/Widgets/profile_cards/streak_widget.dart';
@@ -172,26 +171,26 @@ class _UserProfileWidgetState extends State<UserProfileWidget> {
                       Flexible(
                         child: StreakWidget(
                           text: 'Дней стрика',
-                          email: widget.user[
-                              'email'], // Передаем email выбранного пользователя
+                          email: widget.user['email'],
                         ),
                       ),
                       Flexible(
-                        child: SkillWidget(
-                          text: 'Изучаю',
-                          email: widget.user[
-                              'email'], // Передаем email выбранного пользователя
+                        child: AbsorbPointer(
+                          child: SkillWidget(
+                            text: 'Изучаю',
+                            email: widget.user['email'],
+                          ),
                         ),
                       ),
                       Flexible(
-                        child: MentorStudentFriendsWidget(
-                          text: 'Друзья',
-                          icon: Icons.people,
-                          email: FirebaseAuth.instance.currentUser!.email!,
-                          onTap: () {
-                            // Ваш кастомный обработчик
-                            Navigator.pushNamed(context, FriendsPage.routeName);
-                          },
+                        child: AbsorbPointer(
+                          child: MentorStudentFriendsWidget(
+                            text: 'Друзья',
+                            icon: Icons.people,
+                            email: widget.user['email'],
+                            onTap:
+                                () {}, // Пустой обработчик, так как AbsorbPointer уже блокирует нажатия
+                          ),
                         ),
                       ),
                     ],
