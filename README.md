@@ -34,6 +34,9 @@ git clone https://github.com/yourusername/kitsu.git
 ```bash
 cd kitsu
 ```
+```bash
+flutter pub get
+```
 
 ### Пример работы бота
 
@@ -45,7 +48,4 @@ cd kitsu
 
 ### Авторы проекта
 Проект разработан Laura609
-```
-```bash
-flutter pub get
-```
+
