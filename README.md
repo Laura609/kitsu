@@ -33,6 +33,7 @@ git clone https://github.com/yourusername/kitsu.git
 ```
 ```bash
 cd kitsu
+```
 
 ### Пример работы бота
 
