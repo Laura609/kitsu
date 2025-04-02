@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:test1/Pages/friends_page.dart';
+import 'package:test1/Pages/Friend/friend_page.dart';
 import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/profile_cards/profile_card.dart';
 import 'package:test1/Widgets/shimer_profile_widget.dart';
@@ -42,7 +42,7 @@ class MentorStudentFriendsWidget extends StatelessWidget {
       onTap: onTap ??
           () => AppNavigator.fadePush(
                 context,
-                FriendsPage(),
+                FriendPage(),
               ),
       child: FutureBuilder<int>(
         future: _getFriendsCount(),

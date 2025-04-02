@@ -1,10 +1,11 @@
 import 'dart:math';
+import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:test1/Pages/Dialogs/edit_info_dialog.dart';
-import 'package:test1/Pages/friends_page.dart';
+import 'package:test1/Pages/Dialogs/edit_info_dialog.dart'
+    as dialog; // Added 'as dialog'
 import 'package:test1/Widgets/app_bar_widget.dart';
 import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
@@ -13,7 +14,9 @@ import 'package:test1/Widgets/profile_cards/skill_widget.dart';
 import 'package:test1/Widgets/profile_cards/streak_widget.dart';
 import 'package:test1/Widgets/profile_cards/friends_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class MentorProfilePage extends StatefulWidget {
   static const routeName = '/MentorProfilePage';
   const MentorProfilePage({super.key});
@@ -96,10 +99,10 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (userData != null) {
-            // Открываем диалоговое окно с помощью AppNavigator
+            // Instantiate EditUserInfoDialog using the dialog namespace
             AppNavigator.fadeDialog(
               context,
-              EditUserInfoDialog(
+              dialog.EditUserInfoDialog(
                 usernameController: usernameController,
                 bioController: bioController,
                 userEmail: currentUser.email!,
@@ -138,13 +141,13 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
             Flexible(
               child: StreakWidget(
                 text: 'Дней стрика',
-                email: userData['email'], // Используем userData
+                email: userData['email'],
               ),
             ),
             Flexible(
               child: SkillWidget(
                 text: 'Изучаю',
-                email: userData['email'], // Используем userData
+                email: userData['email'],
               ),
             ),
             Flexible(
@@ -153,8 +156,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 icon: Icons.people,
                 email: FirebaseAuth.instance.currentUser!.email!,
                 onTap: () {
-                  // Ваш кастомный обработчик
-                  Navigator.pushNamed(context, FriendsPage.routeName);
+                  Navigator.pushNamed(context, FriendsRoute().routeName);
                 },
               ),
             ),

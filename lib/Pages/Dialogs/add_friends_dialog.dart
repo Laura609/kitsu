@@ -24,6 +24,13 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     super.dispose();
   }
 
+  String _getUserName(Map<String, dynamic>? userData, String userId) {
+    if (userData == null) return userId;
+    return userData['first_name']?.toString() ??
+        userData['username']?.toString() ??
+        userId;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -55,9 +62,9 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                   filled: true,
                   fillColor: Colors.grey[850],
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4 // Добавляем внутренний отступ снизу
-                      ),
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                 ),
                 onChanged: (query) =>
                     setState(() => _searchQuery = query.toLowerCase()),
@@ -81,58 +88,70 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                   }
 
                   if (!snapshot.hasData || snapshot.data == null) {
-                    return const Text('Нет данных',
-                        style: TextStyle(color: Colors.white));
+                    return const Center(
+                      child: Text('Нет данных',
+                          style: TextStyle(color: Colors.white)),
+                    );
                   }
 
-                  // Разделяем данные на друзей и всех пользователей
                   final friendsSnapshot = snapshot.data![0];
                   final allUsersSnapshot = snapshot.data![1];
 
                   // Список друзей
                   final friendsList =
                       friendsSnapshot.docs.map((doc) => doc.id).toList();
-                  final filteredFriends = allUsersSnapshot.docs
+
+                  // Фильтрация пользователей
+                  final filteredUsers = allUsersSnapshot.docs.where((doc) {
+                    if (doc.id == currentUser.email) return false;
+                    final userData = doc.data() as Map<String, dynamic>?;
+                    final name = _getUserName(userData, doc.id).toLowerCase();
+                    return name.contains(_searchQuery);
+                  }).toList();
+
+                  // Разделение на друзей и других пользователей
+                  final filteredFriends = filteredUsers
                       .where((doc) => friendsList.contains(doc.id))
-                      .where((doc) {
-                    final name = doc['first_name'] ?? doc['username'] ?? doc.id;
-                    return name.toString().toLowerCase().contains(_searchQuery);
-                  }).toList();
+                      .toList();
+                  final otherUsers = filteredUsers
+                      .where((doc) => !friendsList.contains(doc.id))
+                      .toList();
 
-                  // Список всех пользователей (кроме текущего и друзей)
-                  final otherUsers = allUsersSnapshot.docs
-                      .where((doc) =>
-                          doc.id != currentUser.email &&
-                          !friendsList.contains(doc.id))
-                      .where((doc) {
-                    final name = doc['first_name'] ?? doc['username'] ?? doc.id;
-                    return name.toString().toLowerCase().contains(_searchQuery);
-                  }).toList();
+                  // Формирование списка для отображения
+                  final List<Widget> displayList = [];
 
-                  // Формируем список отображения
-                  final List<dynamic> displayList = [];
-
-                  // Добавляем друзей
+                  // Добавление друзей
                   if (filteredFriends.isNotEmpty) {
-                    displayList.add(const Text('Друзья',
-                        style: TextStyle(color: Colors.grey)));
-                    displayList.addAll(filteredFriends);
+                    displayList.add(
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text('Друзья',
+                            style: TextStyle(color: Colors.grey)),
+                      ),
+                    );
+                    displayList.addAll(filteredFriends.map((doc) =>
+                        _buildUserTile(doc
+                            as QueryDocumentSnapshot<Map<String, dynamic>>)));
                   }
 
-                  // Добавляем разделитель и других пользователей
+                  // Добавление других пользователей
                   if (otherUsers.isNotEmpty) {
                     if (displayList.isNotEmpty) {
-                      displayList.add(const Divider(
-                        color: Colors.grey,
-                        height: 1,
-                      ));
+                      displayList
+                          .add(const Divider(color: Colors.grey, height: 1));
                     }
-                    displayList.add(const Text('Все пользователи',
-                        style: TextStyle(color: Colors.grey)));
-                    displayList.addAll(otherUsers);
+                    displayList.add(
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text('Все пользователи',
+                            style: TextStyle(color: Colors.grey)),
+                      ),
+                    );
+                    displayList.addAll(otherUsers.map((doc) => _buildUserTile(
+                        doc as QueryDocumentSnapshot<Map<String, dynamic>>)));
                   }
 
-                  // Обработка пустого списка
+                  // Пустое состояние
                   if (displayList.isEmpty) {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -146,47 +165,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                     );
                   }
 
-                  return ListView.builder(
-                    itemCount: displayList.length,
-                    itemBuilder: (context, index) {
-                      final item = displayList[index];
-
-                      // Отображение заголовков разделов
-                      if (item is Text) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: item,
-                        );
-                      }
-
-                      // Отображение разделителей
-                      if (item is Divider) {
-                        return item;
-                      }
-
-                      // Отображение пользователей
-                      final userDoc =
-                          item as QueryDocumentSnapshot<Map<String, dynamic>>;
-                      final userData = userDoc.data();
-                      final userName = userData['first_name'] ??
-                          userData['username'] ??
-                          userDoc.id;
-
-                      return ListTile(
-                        leading: const CircleAvatar(
-                            child: Icon(Icons.person, color: Colors.white)),
-                        title: Text(userName,
-                            style: const TextStyle(color: Colors.white)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          AppNavigator.fadePush(
-                            context,
-                            UserProfileWidget(user: userData),
-                          );
-                        },
-                      );
-                    },
-                  );
+                  return ListView(children: displayList);
                 },
               ),
             ),
@@ -195,10 +174,29 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: Navigator.of(context).pop,
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Закрыть', style: TextStyle(color: Colors.white)),
         ),
       ],
+    );
+  }
+
+  Widget _buildUserTile(QueryDocumentSnapshot<Map<String, dynamic>> userDoc) {
+    final userData = userDoc.data();
+    final userName = _getUserName(userData, userDoc.id);
+
+    return ListTile(
+      leading: const CircleAvatar(
+        child: Icon(Icons.person, color: Colors.white),
+      ),
+      title: Text(userName, style: const TextStyle(color: Colors.white)),
+      onTap: () {
+        Navigator.pop(context);
+        AppNavigator.fadePush(
+          context,
+          UserProfileWidget(user: userData),
+        );
+      },
     );
   }
 }

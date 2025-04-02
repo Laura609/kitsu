@@ -1,7 +1,9 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/Auth/login_page.dart';
 import 'package:test1/Pages/Auth/register_page.dart';
 
+@RoutePage()
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 

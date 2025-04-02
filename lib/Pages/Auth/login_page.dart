@@ -1,13 +1,15 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Constants/constant.dart';
 import 'package:test1/Pages/Auth/forgot_password_page.dart';
-import 'package:test1/Pages/Auth/main_page.dart';
 import 'package:test1/Widgets/text_input_widgets/email_textfield_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
-import 'package:test1/Widgets/text_input_widgets/password_textfield_widget.dart'; // Подключение правильного виджета
+import 'package:test1/Widgets/text_input_widgets/password_textfield_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class LoginPage extends StatefulWidget {
   final VoidCallback showRegisterPage;
   const LoginPage({super.key, required this.showRegisterPage});
@@ -35,9 +37,10 @@ class _LoginPageState extends State<LoginPage> {
 
     // Показать загрузочную страницу
     if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoadingWidget()),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const LoadingWidget(),
     );
 
     try {
@@ -47,20 +50,16 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text.trim(),
       );
 
-      // Закрытие загрузочной страницы после успешного входа
+      // После успешного входа закрываем загрузочный диалог
       if (!mounted) return;
-      Navigator.of(context).pop(); // Закрываем загрузочную страницу
+      Navigator.of(context).pop();
 
       // Перенаправление на главную страницу после успешного входа
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const MainPage()), // Переход на главный экран
-      );
+      context.router.replace(MainRoute()); // Используем auto_route с replace
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      Navigator.of(context).pop(); // Закрываем загрузочную страницу
+      // Закрываем загрузочный диалог при любой ошибке
+      Navigator.of(context).pop();
 
       // Обработка различных ошибок FirebaseAuth
       String errorMessage = 'Ошибка входа. Попробуйте снова позже.';
@@ -78,8 +77,11 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
+      // Закрываем загрузочный диалог при любой ошибке
+      Navigator.of(context).pop();
+
+      // Показ сообщения об ошибке
       if (!mounted) return;
-      Navigator.of(context).pop(); // Закрываем загрузочную страницу
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Произошла ошибка. Попробуйте позже.")),
       );

@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
-import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
 import 'package:test1/Widgets/skill_button_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class StudentSkillSelectionPage extends StatefulWidget {
   static const routeName = '/StudentSkillSelectionPage';
 
@@ -61,12 +63,10 @@ class _StudentSkillSelectionPageState extends State<StudentSkillSelectionPage> {
 
       logger.i('Навык сохранен в Firestore: $skillAbbreviation');
 
-      // Переход на страницу профиля с проверкой mounted
+      // Переход на страницу профиля через роутер
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MentorOrStudentProfilePage()),
-        );
+        context.router
+            .replace(MentorOrStudentProfileRoute()); // Используем auto_route
       }
     } catch (e) {
       logger.e('Ошибка при сохранении навыка в Firestore: $e');

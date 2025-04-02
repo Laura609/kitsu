@@ -1,6 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+@RoutePage()
 class EditUserInfoDialog extends StatelessWidget {
   final TextEditingController usernameController;
   final TextEditingController bioController;
@@ -72,7 +74,8 @@ class EditUserInfoDialog extends StatelessWidget {
       actions: [
         TextButton(
           child: const Text('Отмена', style: TextStyle(color: Colors.white)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () =>
+              context.router.pop(), // Закрываем диалог через роутер
         ),
         TextButton(
           child: Text('Сохранить', style: TextStyle(color: accentColor)),
@@ -94,8 +97,10 @@ class EditUserInfoDialog extends StatelessWidget {
                     .doc(userEmail)
                     .update({'bio': newBio});
               }
+
+              // После успешного обновления закрываем диалог
               if (context.mounted) {
-                Navigator.pop(context);
+                context.router.pop(); // Закрываем диалог через роутер
               }
             } catch (e) {
               // Обработка ошибок при обновлении

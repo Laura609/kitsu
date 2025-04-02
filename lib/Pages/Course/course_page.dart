@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Widgets/app_bar_widget.dart';
-import 'package:test1/Widgets/courses/training_menu_widget.dart';
+import 'package:test1/Pages/Course/widgets/training_menu_widget.dart';
 
-class TrainingPage extends StatelessWidget {
+@RoutePage()
+class CoursePage extends StatelessWidget {
   static const routeName = '/training';
 
-  const TrainingPage({super.key});
+  const CoursePage({super.key});
 
   @override
   Widget build(BuildContext context) {

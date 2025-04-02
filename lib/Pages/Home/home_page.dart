@@ -1,9 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Pages/Dialogs/premium_dialog.dart';
-import 'package:test1/Pages/Dialogs/skill_selection_dialog.dart';
-import 'package:test1/Pages/training_page.dart';
+import 'package:test1/Pages/Course/course_page.dart';
+import 'package:test1/Pages/Home/repository/home_page_repository.dart';
 import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/bottom_bar_widget.dart';
 import 'package:test1/Widgets/button_course_widget.dart';
@@ -13,9 +12,9 @@ import 'package:test1/Widgets/premium_offer_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_list_item_widget.dart';
 import 'package:test1/Widgets/preview_profile/user_profile_widget.dart';
 
+@RoutePage()
 class HomePage extends StatefulWidget {
   static const routeName = '/home';
-
   const HomePage({super.key});
 
   @override
@@ -23,82 +22,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Future<Map<String, String>>? _userDataFuture;
+  late Future<Map<String, String>> _userDataFuture;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the future to fetch user data
-    _userDataFuture = _getUserData(context);
-  }
-
-  // Получаем навык и роль текущего пользователя
-  Future<Map<String, String>> _getUserData(BuildContext context) async {
-    final currentUser = FirebaseAuth.instance.currentUser!;
-    final userDoc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser.email)
-        .get();
-    final skill = userDoc.data()?['selected_skill'] ?? '';
-    final role = userDoc.data()?['role'] ?? '';
-
-    // Если навык или роль не выбраны, показываем диалоговое окно
-    if (skill.isEmpty || role.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await showDialog(
-          context: context,
-          builder: (context) => SkillSelectionDialog(
-            skills: ['Программирование', 'Веб-разработка', 'Дизайн'],
-            onSkillSelected: (selectedSkill) async {
-              try {
-                // Map of skill abbreviations
-                final skillAbbreviations = {
-                  'Программирование': 'DEV',
-                  'Веб-разработка': 'WEB',
-                  'Дизайн': 'DES',
-                };
-                // Get the abbreviation for the selected skill
-                final skillAbbreviation =
-                    skillAbbreviations[selectedSkill] ?? selectedSkill;
-                // Update Firestore with the selected skill abbreviation and default role if needed
-                await FirebaseFirestore.instance
-                    .collection('Users')
-                    .doc(currentUser.email)
-                    .update({
-                  'selected_skill': skillAbbreviation, // Store the abbreviation
-                  if (role.isEmpty)
-                    'role': 'Ученик', // Set default role if not already set
-                });
-                // After updating Firestore, refresh the page
-                setState(() {
-                  _userDataFuture = _getUserData(context); // Re-fetch user data
-                });
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Ошибка обновления: $e')),
-                );
-              }
-            },
-          ),
-        );
-      });
-    }
-    return {'skill': skill, 'role': role.isNotEmpty ? role : 'Ученик'};
-  }
-
-  // Запрашиваем пользователей с таким же навыком и противоположной ролью
-  Stream<List<Map<String, dynamic>>> _fetchUsersBySkillAndRole(
-      String skill, String role) {
-    final oppositeRole = role == 'Ученик' ? 'Ментор' : 'Ученик';
-    return FirebaseFirestore.instance
-        .collection('Users')
-        .where('selected_skill', isEqualTo: skill) // Фильтруем по навыку
-        .where('role',
-            isEqualTo: oppositeRole) // Фильтруем по противоположной роли
-        .snapshots()
-        .map((querySnapshot) {
-      return querySnapshot.docs.map((doc) => doc.data()).toList();
-    });
+    _userDataFuture = HomePageRepository().getUserData(context);
   }
 
   @override
@@ -107,7 +36,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color.fromRGBO(36, 36, 36, 1),
       body: SingleChildScrollView(
         child: FutureBuilder<Map<String, String>>(
-          future: _userDataFuture, // Use the future to fetch user data
+          future: _userDataFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: LoadingWidget());
@@ -115,13 +44,12 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.hasError) {
               return Center(child: Text('Ошибка: ${snapshot.error}'));
             }
-            final skill = snapshot.data?['skill'] ?? ''; // Навык пользователя
-            final role =
-                snapshot.data?['role'] ?? 'Ученик'; // Роль пользователя
-            // Текст, который будет отображаться перед списком пользователей
+            final skill = snapshot.data?['skill'] ?? '';
+            final role = snapshot.data?['role'] ?? 'Ученик';
             final roleText = role == 'Ученик' ? 'Менторы' : 'Ученики';
             return StreamBuilder<List<Map<String, dynamic>>>(
-              stream: _fetchUsersBySkillAndRole(skill, role),
+              stream:
+                  HomePageRepository().fetchUsersBySkillAndRole(skill, role),
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: LoadingWidget());
@@ -144,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            roleText, // Показываем "Менторы" или "Ученики"
+                            roleText,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -233,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                             AuctionCard(
                               title: 'Дизайн',
                               assetImage: 'assets/design.png',
-                              targetPage: TrainingPage(),
+                              targetPage: CoursePage(),
                               isInteractive: true,
                             ),
                             const SizedBox(width: 10),
@@ -265,7 +193,7 @@ class _HomePageState extends State<HomePage> {
                           );
                         },
                         description:
-                            'Получите доступ ко всему\nконтенту на 30 дней',
+                            'Получите доступ ко всему контенту на 30 дней',
                         priceText: 'ПОЛУЧИТЬ СЕЙЧАС ЗА 299Р',
                         imageAsset: 'assets/red_fox.png',
                       ),

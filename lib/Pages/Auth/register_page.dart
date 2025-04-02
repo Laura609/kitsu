@@ -1,8 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Constants/constant.dart';
-import 'package:test1/Pages/Routs/skill_mentor_or_student_page.dart';
 import 'package:test1/Widgets/register_button_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/age_textfield_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/email_textfield_widget.dart';
@@ -10,7 +10,9 @@ import 'package:test1/Widgets/text_input_widgets/password_textfield_widget.dart'
 import 'package:test1/Widgets/text_input_widgets/role_selection_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/name_textfield_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
 
@@ -106,12 +108,9 @@ class _RegisterPageState extends State<RegisterPage> {
           'bio': '',
         });
 
-        // После успешной регистрации, перенаправляем на главную страницу
+        // После успешной регистрации, перенаправляем на страницу выбора навыков
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => SkillMentorOrStudentPage()),
-          );
+          context.router.replace(SkillMentorOrStudentRoute());
         }
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'Ошибка регистрации. Попробуйте снова позже.';

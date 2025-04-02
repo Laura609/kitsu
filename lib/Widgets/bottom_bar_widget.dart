@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test1/Pages/chats_page.dart';
-import 'package:test1/Pages/home_page.dart';
-import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
-import 'package:test1/Pages/friends_page.dart'; // Импортируем страницу друзей
+import 'package:auto_route/auto_route.dart';
+import 'package:test1/router/router.gr.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -12,15 +10,7 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex = 3;
-
-  // Маппинг маршрутов, добавляем FriendsPage перед профилем
-  final List<String> _routes = [
-    HomePage.routeName, // Главная страница
-    FriendsPage.routeName, // Страница друзей
-    ChatsPage.routeName,
-    MentorOrStudentProfilePage.routeName, // Страница профиля
-  ];
+  int _selectedIndex = 3; // Начинаем с профиля
 
   @override
   Widget build(BuildContext context) {
@@ -31,52 +21,57 @@ class _BottomNavBarState extends State<BottomNavBar> {
       type: BottomNavigationBarType.fixed,
       currentIndex: _selectedIndex,
       items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Главная"),
+        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Друзья"),
+        BottomNavigationBarItem(icon: Icon(Icons.chat_rounded), label: "Чат"),
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Главная", // Главная страница
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people),
-          label: "Друзья", // Страница друзей
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat_rounded),
-          label: "Чат", // Страница друзей
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle),
-          label: "Профиль", // Страница профиля
-        ),
+            icon: Icon(Icons.account_circle), label: "Профиль"),
       ],
       onTap: (int index) {
-        // Обновляем выбранный индекс
+        if (index == _selectedIndex) return;
+
         setState(() {
           _selectedIndex = index;
         });
 
-        // Навигация на соответствующую страницу
-        if (_routes[index] != ModalRoute.of(context)?.settings.name) {
-          Navigator.pushReplacementNamed(context, _routes[index]);
-        }
+        _navigateToRoute(index);
       },
     );
+  }
+
+  void _navigateToRoute(int index) {
+    switch (index) {
+      case 0:
+        context.replaceRoute(const HomeRoute());
+        break;
+      case 1:
+        context.replaceRoute(const FriendsRoute());
+        break;
+      case 2:
+        context.replaceRoute(ChatsRoute());
+        break;
+      case 3:
+        context.replaceRoute(const MentorOrStudentProfileRoute());
+        break;
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _updateSelectedIndex();
+  }
 
-    // Получаем текущий маршрут и устанавливаем индекс
-    final routeName = ModalRoute.of(context)?.settings.name;
-
-    if (routeName == HomePage.routeName) {
-      _selectedIndex = 0; // Главная
-    } else if (routeName == FriendsPage.routeName) {
-      _selectedIndex = 1; // Главная
-    } else if (routeName == ChatsPage.routeName) {
-      _selectedIndex = 2; // Друзья
-    } else if (routeName == MentorOrStudentProfilePage.routeName) {
-      _selectedIndex = 2; // Друзья
+  void _updateSelectedIndex() {
+    final currentRoute = context.router.current.name;
+    if (currentRoute == HomeRoute.name) {
+      _selectedIndex = 0;
+    } else if (currentRoute == FriendsRoute.name) {
+      _selectedIndex = 1;
+    } else if (currentRoute == ChatsRoute.name) {
+      _selectedIndex = 2;
+    } else if (currentRoute == MentorOrStudentProfileRoute.name) {
+      _selectedIndex = 3;
     }
   }
 }

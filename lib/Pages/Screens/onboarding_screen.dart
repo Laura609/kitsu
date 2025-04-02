@@ -1,13 +1,14 @@
 import 'dart:async';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:test1/Pages/Auth/register_page.dart';
-import 'package:test1/Pages/Auth/login_page.dart';
 import 'package:test1/Pages/Screens/intro_page_1.dart';
 import 'package:test1/Pages/Screens/intro_page_2.dart';
 import 'package:test1/Pages/Screens/intro_page_3.dart';
 import 'package:test1/Widgets/text_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class OnBoardingScreen extends StatefulWidget {
   const OnBoardingScreen({super.key});
 
@@ -25,8 +26,6 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Wait for the first frame to be rendered before starting the timer
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startAutoPageTransition();
     });
@@ -34,9 +33,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
 
   void _startAutoPageTransition() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (!_pageController.hasClients) {
-        return; // Check if controller is attached
-      }
+      if (!_pageController.hasClients) return;
 
       if (_isForward) {
         if (_currentPage < 2) {
@@ -74,7 +71,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _timer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -84,7 +81,6 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // PageView для перехода между экранами
           PageView(
             controller: _pageController,
             onPageChanged: (index) {
@@ -92,16 +88,19 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                 onLastPage = (index == 2);
               });
             },
-            children: const [IntroPage1(), IntroPage2(), IntroPage3()],
+            children: const [
+              IntroPage1(),
+              IntroPage2(),
+              IntroPage3(),
+            ],
           ),
-          // Нижняя панель с индикатором и кнопками
           Positioned(
             bottom: 20,
             left: 0,
             right: 0,
             child: Container(
               padding: const EdgeInsets.all(20),
-              color: const Color.fromRGBO(36, 36, 36, 1),
+              color: Colors.transparent,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -116,20 +115,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     ),
                   ),
                   const SizedBox(height: 50),
+                  // Кнопка "НАЧАТЬ" - переход на страницу регистрации
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterPage(
-                            showLoginPage: () {
-                              setState(() {
-                                // Переключение на страницу авторизации
-                              });
-                            },
-                          ),
-                        ),
-                      );
+                      context.router.replace(const AuthRoute());
                     },
                     child: Container(
                       padding: const EdgeInsets.all(10),
@@ -141,28 +130,19 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                         child: Text(
                           'НАЧАТЬ',
                           style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14),
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
+                  // Кнопка "У МЕНЯ УЖЕ ЕСТЬ АККАУНТ" - переход на страницу входа
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginPage(
-                            showRegisterPage: () {
-                              setState(() {
-                                // Переключение на страницу регистрации
-                              });
-                            },
-                          ),
-                        ),
-                      );
+                      context.router.replace(const AuthRoute());
                     },
                     child: const TextWidget(
                       textTitle: 'У МЕНЯ УЖЕ ЕСТЬ АККАУНТ',

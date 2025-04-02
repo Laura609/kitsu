@@ -1,15 +1,16 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:test1/Widgets/app_navigator_widget.dart';
+import 'package:test1/Pages/Chat/repository/personal_message_repository.dart';
 import 'package:test1/Widgets/loading_widget.dart';
-import 'package:test1/Widgets/preview_profile/user_profile_widget.dart';
-import 'package:test1/services/chat/chat_service.dart';
 
+@RoutePage()
 class PersonalMessagePage extends StatefulWidget {
   final String currentUserId;
   final String otherUserId;
   final String otherUserEmail;
-
   const PersonalMessagePage({
     super.key,
     required this.currentUserId,
@@ -23,11 +24,9 @@ class PersonalMessagePage extends StatefulWidget {
 
 class _PersonalMessagePageState extends State<PersonalMessagePage> {
   final TextEditingController _controller = TextEditingController();
-  final ChatService _chatService = ChatService();
-  final ScrollController _scrollController = ScrollController();
-  final FocusNode _focusNode = FocusNode();
-
-  late Stream<QuerySnapshot> _messagesStream;
+  late PersonalMessagerepository _logic;
+  late ScrollController _scrollController; // Определяем ScrollController
+  late StreamController<QuerySnapshot> _messagesStreamController;
   String? _otherUserName;
   String? _lastActiveDate;
   bool _isSending = false;
@@ -37,93 +36,60 @@ class _PersonalMessagePageState extends State<PersonalMessagePage> {
   void initState() {
     super.initState();
     _isMounted = true;
+    _logic = PersonalMessagerepository(
+      widget.currentUserId,
+      widget.otherUserId,
+    );
+    _scrollController = ScrollController(); // Инициализируем ScrollController
     _initialize();
   }
 
   void _initialize() {
-    _messagesStream = _chatService.getMessages(
-      widget.currentUserId,
-      widget.otherUserId,
-    );
+    _messagesStreamController = StreamController<QuerySnapshot>();
+    _messagesStreamController.addStream(_logic.getMessagesStream());
     _loadOtherUserData();
-    _scrollToBottom();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
   }
 
   @override
   void dispose() {
     _isMounted = false;
     _controller.dispose();
-    _focusNode.dispose();
-    _scrollController.dispose();
+    _messagesStreamController.close();
+    _scrollController.dispose(); // Освобождаем ScrollController
     super.dispose();
   }
 
   Future<void> _loadOtherUserData() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(widget.otherUserId)
-          .get();
-
-      if (!_isMounted) return;
-
-      if (userDoc.exists) {
-        setState(() {
-          _otherUserName = userDoc['username'] ?? widget.otherUserEmail;
-          _lastActiveDate = _formatLastEntry(userDoc['lastEntry']);
-        });
-      }
-    } catch (e) {
-      if (_isMounted) {
-        setState(() {
-          _otherUserName = widget.otherUserEmail;
-          _lastActiveDate = 'Недавно';
-        });
-      }
-    }
-  }
-
-  String _formatLastEntry(dynamic lastEntry) {
-    if (lastEntry == null) return 'Недавно';
-    if (lastEntry is! Timestamp) return 'Недавно';
-
-    final date = lastEntry.toDate();
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inMinutes < 5) return 'В сети';
-    if (difference.inMinutes < 1) return 'Только что';
-    if (difference.inHours < 1) return '${difference.inMinutes} мин назад';
-    if (difference.inDays < 1) return '${difference.inHours} ч назад';
-    if (difference.inDays < 7) return '${difference.inDays} дн назад';
-    return '${date.day}.${date.month}.${date.year}';
+    final userData = await _logic.loadOtherUserData();
+    if (!_isMounted) return;
+    setState(() {
+      _otherUserName = userData['username'] ?? widget.otherUserEmail;
+      _lastActiveDate = _logic.formatLastEntry(userData['lastEntry']);
+    });
   }
 
   Future<void> _sendMessage() async {
     final message = _controller.text.trim();
     if (message.isEmpty || !_isMounted) return;
-
     _controller.clear();
     setState(() => _isSending = true);
-
     try {
-      await _chatService.sendMessage(
-        senderId: widget.currentUserId,
-        receiverId: widget.otherUserId,
-        message: message,
-      );
+      await _logic.sendMessage(message);
     } finally {
       if (_isMounted) {
         setState(() => _isSending = false);
       }
     }
-
-    _scrollToBottom();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
   }
 
   void _scrollToBottom() {
     if (!_isMounted || !_scrollController.hasClients) return;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -135,32 +101,9 @@ class _PersonalMessagePageState extends State<PersonalMessagePage> {
     });
   }
 
-  void _openProfile() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(widget.otherUserId)
-          .get();
-
-      if (!_isMounted || !userDoc.exists) return;
-
-      AppNavigator.fadePush(
-        context,
-        UserProfileWidget(user: userDoc.data() as Map<String, dynamic>),
-      );
-    } catch (e) {
-      if (_isMounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не удалось загрузить профиль')),
-        );
-      }
-    }
-  }
-
   Widget _buildMessageBubble(DocumentSnapshot doc) {
     final isMe = doc['sender_id'] == widget.currentUserId;
     final message = doc['message'] as String;
-
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -225,7 +168,7 @@ class _PersonalMessagePageState extends State<PersonalMessagePage> {
       ),
       title: GestureDetector(
         behavior: HitTestBehavior.opaque, // Убираем подсветку
-        onTap: _openProfile,
+        onTap: () {},
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
@@ -251,7 +194,7 @@ class _PersonalMessagePageState extends State<PersonalMessagePage> {
       actions: [
         GestureDetector(
           behavior: HitTestBehavior.opaque, // Убираем подсветку
-          onTap: _openProfile,
+          onTap: () {},
           child: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Stack(
@@ -295,7 +238,6 @@ class _PersonalMessagePageState extends State<PersonalMessagePage> {
             Expanded(
               child: TextField(
                 controller: _controller,
-                focusNode: _focusNode,
                 decoration: const InputDecoration(
                   hintText: 'Сообщение',
                   hintStyle: TextStyle(color: Colors.grey),
@@ -335,20 +277,16 @@ class _PersonalMessagePageState extends State<PersonalMessagePage> {
           const SizedBox(height: 20),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _messagesStream,
+              stream: _messagesStreamController.stream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: LoadingWidget());
                 }
-
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return _buildEmptyState();
                 }
-
-                _scrollToBottom();
-
                 return ListView.builder(
-                  controller: _scrollController,
+                  controller: _scrollController, // Используем ScrollController
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) =>
                       _buildMessageBubble(snapshot.data!.docs[index]),

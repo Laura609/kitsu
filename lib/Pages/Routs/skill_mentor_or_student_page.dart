@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:test1/Pages/Questions/student_skill.dart';
 import 'package:test1/Pages/Routs/mentor_or_student_profile_page.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 
+@RoutePage()
 class SkillMentorOrStudentPage extends StatelessWidget {
   static const routeName = '/SkillMentorOrStudentPage';
   SkillMentorOrStudentPage({super.key});

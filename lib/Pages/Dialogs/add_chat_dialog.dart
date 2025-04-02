@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test1/Pages/personal_message_page.dart';
+import 'package:test1/Pages/Chat/personal_message_page.dart';
 import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 
@@ -14,7 +14,7 @@ class AddChatDialog extends StatefulWidget {
 
 class _AddChatDialogState extends State<AddChatDialog> {
   final currentUser = FirebaseAuth.instance.currentUser!;
-  final accentColor = Color.fromRGBO(2, 217, 173, 1); // Основной акцентный цвет
+  final accentColor = const Color.fromRGBO(2, 217, 173, 1);
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -22,6 +22,15 @@ class _AddChatDialogState extends State<AddChatDialog> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  String _getUserName(Map<String, dynamic>? userData, String userId) {
+    if (userData == null) return userId;
+
+    return userData['username']?.toString() ??
+        userData['first_name']?.toString() ??
+        userData['email']?.toString() ??
+        userId;
   }
 
   @override
@@ -37,7 +46,7 @@ class _AddChatDialogState extends State<AddChatDialog> {
         height: 400,
         child: Column(
           children: [
-            // Поле поиска
+            // Search field
             SizedBox(
               height: 40,
               child: TextField(
@@ -55,16 +64,19 @@ class _AddChatDialogState extends State<AddChatDialog> {
                   filled: true,
                   fillColor: Colors.grey[850],
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4 // Добавляем внутренний отступ снизу
-                      ),
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                 ),
-                onChanged: (query) =>
-                    setState(() => _searchQuery = query.toLowerCase()),
+                onChanged: (query) {
+                  setState(() {
+                    _searchQuery = query.toLowerCase();
+                  });
+                },
               ),
             ),
 
-            // Список пользователей
+            // Users list
             Expanded(
               child: FutureBuilder<List<QuerySnapshot>>(
                 future: Future.wait([
@@ -81,58 +93,71 @@ class _AddChatDialogState extends State<AddChatDialog> {
                   }
 
                   if (!snapshot.hasData || snapshot.data == null) {
-                    return const Text('Нет данных',
-                        style: TextStyle(color: Colors.white));
+                    return const Center(
+                      child: Text('Нет данных',
+                          style: TextStyle(color: Colors.white)),
+                    );
                   }
 
-                  // Разделяем данные на друзей и всех пользователей
                   final friendsSnapshot = snapshot.data![0];
                   final allUsersSnapshot = snapshot.data![1];
 
-                  // Список друзей
+                  // Get friends list
                   final friendsList =
                       friendsSnapshot.docs.map((doc) => doc.id).toList();
-                  final filteredFriends = allUsersSnapshot.docs
+
+                  // Filter users
+                  final filteredUsers = allUsersSnapshot.docs.where((doc) {
+                    if (doc.id == currentUser.email) return false;
+
+                    final userData = doc.data() as Map<String, dynamic>?;
+                    final name = _getUserName(userData, doc.id).toLowerCase();
+                    return name.contains(_searchQuery);
+                  }).toList();
+
+                  // Separate friends and other users
+                  final filteredFriends = filteredUsers
                       .where((doc) => friendsList.contains(doc.id))
-                      .where((doc) {
-                    final name = doc['first_name'] ?? doc['username'] ?? doc.id;
-                    return name.toString().toLowerCase().contains(_searchQuery);
-                  }).toList();
+                      .toList();
+                  final otherUsers = filteredUsers
+                      .where((doc) => !friendsList.contains(doc.id))
+                      .toList();
 
-                  // Список всех пользователей (кроме текущего и друзей)
-                  final otherUsers = allUsersSnapshot.docs
-                      .where((doc) =>
-                          doc.id != currentUser.email &&
-                          !friendsList.contains(doc.id))
-                      .where((doc) {
-                    final name = doc['first_name'] ?? doc['username'] ?? doc.id;
-                    return name.toString().toLowerCase().contains(_searchQuery);
-                  }).toList();
+                  // Build display list
+                  final List<Widget> displayList = [];
 
-                  // Формируем список отображения
-                  final List<dynamic> displayList = [];
-
-                  // Добавляем друзей
+                  // Add friends section
                   if (filteredFriends.isNotEmpty) {
-                    displayList.add(const Text('Друзья',
-                        style: TextStyle(color: Colors.grey)));
-                    displayList.addAll(filteredFriends);
+                    displayList.add(
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text('Друзья',
+                            style: TextStyle(color: Colors.grey)),
+                      ),
+                    );
+                    displayList.addAll(filteredFriends.map((doc) =>
+                        _buildUserTile(doc
+                            as QueryDocumentSnapshot<Map<String, dynamic>>)));
                   }
 
-                  // Добавляем разделитель и других пользователей
+                  // Add other users section
                   if (otherUsers.isNotEmpty) {
                     if (displayList.isNotEmpty) {
-                      displayList.add(const Divider(
-                        color: Colors.grey,
-                        height: 1,
-                      ));
+                      displayList
+                          .add(const Divider(color: Colors.grey, height: 1));
                     }
-                    displayList.add(const Text('Все пользователи',
-                        style: TextStyle(color: Colors.grey)));
-                    displayList.addAll(otherUsers);
+                    displayList.add(
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text('Все пользователи',
+                            style: TextStyle(color: Colors.grey)),
+                      ),
+                    );
+                    displayList.addAll(otherUsers.map((doc) => _buildUserTile(
+                        doc as QueryDocumentSnapshot<Map<String, dynamic>>)));
                   }
 
-                  // Обработка пустого списка
+                  // Empty state
                   if (displayList.isEmpty) {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -146,51 +171,7 @@ class _AddChatDialogState extends State<AddChatDialog> {
                     );
                   }
 
-                  return ListView.builder(
-                    itemCount: displayList.length,
-                    itemBuilder: (context, index) {
-                      final item = displayList[index];
-
-                      // Отображение заголовков разделов
-                      if (item is Text) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: item,
-                        );
-                      }
-
-                      // Отображение разделителей
-                      if (item is Divider) {
-                        return item;
-                      }
-
-                      // Отображение пользователей
-                      final userDoc =
-                          item as QueryDocumentSnapshot<Map<String, dynamic>>;
-                      final userData = userDoc.data();
-                      final userName = userData['first_name'] ??
-                          userData['username'] ??
-                          userDoc.id;
-
-                      return ListTile(
-                        leading: CircleAvatar(
-                            child: Icon(Icons.person, color: Colors.white)),
-                        title: Text(userName,
-                            style: const TextStyle(color: Colors.white)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          AppNavigator.fadePush(
-                            context,
-                            PersonalMessagePage(
-                              currentUserId: currentUser.email!,
-                              otherUserId: userDoc.id,
-                              otherUserEmail: userDoc.id,
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
+                  return ListView(children: displayList);
                 },
               ),
             ),
@@ -203,6 +184,29 @@ class _AddChatDialogState extends State<AddChatDialog> {
           onPressed: () => Navigator.pop(context),
         ),
       ],
+    );
+  }
+
+  Widget _buildUserTile(QueryDocumentSnapshot<Map<String, dynamic>> userDoc) {
+    final userData = userDoc.data();
+    final userName = _getUserName(userData, userDoc.id);
+
+    return ListTile(
+      leading: const CircleAvatar(
+        child: Icon(Icons.person, color: Colors.white),
+      ),
+      title: Text(userName, style: const TextStyle(color: Colors.white)),
+      onTap: () {
+        Navigator.pop(context);
+        AppNavigator.fadePush(
+          context,
+          PersonalMessagePage(
+            currentUserId: currentUser.email!,
+            otherUserId: userDoc.id,
+            otherUserEmail: userDoc.id,
+          ),
+        );
+      },
     );
   }
 }

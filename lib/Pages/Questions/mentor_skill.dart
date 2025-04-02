@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
-import 'package:test1/Pages/Questions/level.dart';
 import 'package:test1/Widgets/skill_button_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class MentorSkillSelectionPage extends StatefulWidget {
   static const routeName = '/MentorSkillSelectionPage';
 
@@ -61,13 +63,10 @@ class _MentorSkillSelectionPageState extends State<MentorSkillSelectionPage> {
 
       logger.i('Навык сохранен в Firestore: $skillAbbreviation');
 
-      // Проверяем, что widget еще существует перед навигацией
+      // Переход на страницу уровня
       if (mounted) {
-        // Переход на страницу уровня
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MentorLevelSelectionPage()),
-        );
+        context.router
+            .replace(MentorLevelSelectionRoute()); // Используем auto_route
       }
     } catch (e) {
       logger.e('Ошибка при сохранении навыка в Firestore: $e');

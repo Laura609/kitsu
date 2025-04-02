@@ -1,11 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:test1/Pages/Auth/main_page.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
+import 'package:test1/router/router.gr.dart';
 
+@RoutePage()
 class MentorLevelSelectionPage extends StatefulWidget {
   static const routeName = '/MentorLevelSelectionPage';
 
@@ -131,11 +133,9 @@ class _MentorLevelSelectionPageState extends State<MentorLevelSelectionPage> {
                           // Save selected level in Firestore
                           await _saveSelectedLevel();
 
-                          // Navigate to the main page
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => MainPage()),
-                          );
+                          // Navigate to the main page using auto_route
+                          context.router
+                              .replace(MainRoute()); // Используем auto_route
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
