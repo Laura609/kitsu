@@ -33,6 +33,17 @@ git clone https://github.com/yourusername/kitsu.git
 ```
 ```bash
 cd kitsu
+
+### Пример работы бота
+
+Главная страница:                                                                          |  Профиль:                                                                                   |  Готовая аватарка:
+:-----------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------:
+![image](https://github.com/user-attachments/assets/c960fdcd-7e05-4618-9015-7ef2aae536fb)  |  ![image](https://github.com/user-attachments/assets/f8f730f6-ce3a-4531-ba26-4df6167ceb60)  |  ![image](https://github.com/user-attachments/assets/bc6bac2b-8683-4a1a-b8d6-50adf4579b77)
+
+
+
+### Авторы проекта
+Проект разработан Laura609
 ```
 ```bash
 flutter pub get
