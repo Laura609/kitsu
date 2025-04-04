@@ -15,6 +15,10 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: _router.config(),
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color.fromRGBO(36, 36, 36, 1),
+        primaryColor: const Color.fromRGBO(2, 217, 173, 1),
+      ),
     );
   }
 }

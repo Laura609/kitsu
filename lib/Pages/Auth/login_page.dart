@@ -1,15 +1,14 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/Constants/constant.dart';
 import 'package:test1/Pages/Auth/forgot_password_page.dart';
+import 'package:test1/Pages/Auth/main_page.dart';
+import 'package:test1/Widgets/app_navigator_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/email_textfield_widget.dart';
 import 'package:test1/Widgets/loading_widget.dart';
 import 'package:test1/Widgets/text_widget.dart';
 import 'package:test1/Widgets/text_input_widgets/password_textfield_widget.dart';
-import 'package:test1/router/router.gr.dart';
 
-@RoutePage()
 class LoginPage extends StatefulWidget {
   final VoidCallback showRegisterPage;
   const LoginPage({super.key, required this.showRegisterPage});
@@ -19,13 +18,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // Контроллеры
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final bool _isEmailTouched = false; // Mark as final
-  final bool _isPasswordTouched = false; // Mark as final
+  final bool _isEmailTouched = false;
+  final bool _isPasswordTouched = false;
 
-  // Функция для входа
   Future<void> signIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       if (!mounted) return;
@@ -35,8 +32,6 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // Показать загрузочную страницу
-    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -44,24 +39,21 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     try {
-      // Попытка входа в систему с использованием Firebase
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // После успешного входа закрываем загрузочный диалог
       if (!mounted) return;
       Navigator.of(context).pop();
 
-      // Перенаправление на главную страницу после успешного входа
-      if (!mounted) return;
-      context.router.replace(MainRoute()); // Используем auto_route с replace
+      // Плавный переход на главную страницу
+      AppNavigator.fadePush(
+        context,
+        const MainPage(), // Замените на ваш виджет MainScreen
+      );
     } on FirebaseAuthException catch (e) {
-      // Закрываем загрузочный диалог при любой ошибке
       Navigator.of(context).pop();
-
-      // Обработка различных ошибок FirebaseAuth
       String errorMessage = 'Ошибка входа. Попробуйте снова позже.';
       if (e.code == 'user-not-found') {
         errorMessage = 'Пользователь не найден. Проверьте email.';
@@ -71,16 +63,12 @@ class _LoginPageState extends State<LoginPage> {
         errorMessage = 'Некорректный email. Пожалуйста, проверьте формат.';
       }
 
-      // Показ сообщения об ошибке
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
-      // Закрываем загрузочный диалог при любой ошибке
       Navigator.of(context).pop();
-
-      // Показ сообщения об ошибке
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Произошла ошибка. Попробуйте позже.")),
@@ -106,7 +94,6 @@ class _LoginPageState extends State<LoginPage> {
             child: Center(
               child: Column(
                 children: <Widget>[
-                  const SizedBox(height: 50),
                   const Image(
                     image: AssetImage('assets/rrr.png'),
                     width: 150,
@@ -138,15 +125,10 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const ForgotPasswordPage(),
-                              ),
-                            );
-                          },
+                          onTap: () => AppNavigator.fadePush(
+                            context,
+                            const ForgotPasswordPage(),
+                          ),
                           child: const TextWidget(
                             textTitle: 'Забыли пароль?',
                             textTitleColor: Colors.white,
@@ -171,9 +153,10 @@ class _LoginPageState extends State<LoginPage> {
                           child: Text(
                             'Войти',
                             style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
                       ),
@@ -186,18 +169,20 @@ class _LoginPageState extends State<LoginPage> {
                       const Text(
                         'Нет аккаунта? ',
                         style: TextStyle(
-                            color: Color.fromRGBO(168, 168, 168, 1),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold),
+                          color: Color.fromRGBO(168, 168, 168, 1),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       GestureDetector(
                         onTap: widget.showRegisterPage,
                         child: const Text(
                           'Зарегистрироваться',
                           style: TextStyle(
-                              color: Color.fromRGBO(2, 217, 173, 1),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold),
+                            color: Color.fromRGBO(2, 217, 173, 1),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],

@@ -26,50 +26,53 @@ class EditUserInfoDialog extends StatelessWidget {
         'Редактировать информацию',
         style: TextStyle(color: Colors.white),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: usernameController,
-            autofocus: true,
-            cursorColor: accentColor,
-            maxLength: 30, // Максимальное количество символов для имени
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Введите новое имя',
-              hintStyle: const TextStyle(color: Colors.grey),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: accentColor, width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.grey, width: 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              counterText: '', // Скрываем счетчик символов
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: bioController,
-            cursorColor: accentColor,
-            maxLength: 150, // Максимальное количество символов для био
-            maxLines: 3, // Разрешаем многострочный ввод
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Введите новое био',
-              hintStyle: const TextStyle(color: Colors.grey),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: accentColor, width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.grey, width: 1),
-                borderRadius: BorderRadius.circular(8),
+      content: SingleChildScrollView(
+        // Обертываем содержимое в SingleChildScrollView
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: usernameController,
+              autofocus: true,
+              cursorColor: accentColor,
+              maxLength: 30, // Максимальное количество символов для имени
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Введите новое имя',
+                hintStyle: const TextStyle(color: Colors.grey),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: accentColor, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                counterText: '', // Скрываем счетчик символов
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            TextField(
+              controller: bioController,
+              cursorColor: accentColor,
+              maxLength: 150, // Максимальное количество символов для био
+              maxLines: 3, // Разрешаем многострочный ввод
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Введите новое био',
+                hintStyle: const TextStyle(color: Colors.grey),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: accentColor, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

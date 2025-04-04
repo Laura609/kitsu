@@ -14,7 +14,7 @@ class AppNavigator {
               scale: Tween<double>(begin: 0.95, end: 1.0).animate(
                 CurvedAnimation(
                   parent: animation,
-                  curve: Curves.easeOut,
+                  curve: Curves.bounceInOut,
                 ),
               ),
               child: child,

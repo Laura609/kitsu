@@ -26,7 +26,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
 
   String _getUserName(Map<String, dynamic>? userData, String userId) {
     if (userData == null) return userId;
-    return userData['first_name']?.toString() ??
+    return userData['username']?.toString() ??
         userData['username']?.toString() ??
         userId;
   }
